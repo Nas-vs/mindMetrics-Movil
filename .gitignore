@@ -1,0 +1,74 @@
+app/env/*.json
+!app/env/local.json
+
+# Secretos de las Edge Functions (service_role, SMTP, etc.)
+supabase/functions/.env
+supabase/.env
+.env
+.env.*
+!.env.example
+
+# Llaves para firmar el APK de producción
+*.jks
+*.keystore
+**/android/key.properties
+
+# =====================================================
+#  SUPABASE CLI
+# =====================================================
+supabase/.branches
+supabase/.temp
+
+**/.fvm/
+
+# =====================================================
+#  FLUTTER / DART
+# =====================================================
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+
+# =====================================================
+#  ANDROID
+# =====================================================
+**/android/.gradle/
+**/android/captures/
+**/android/local.properties
+**/android/gradlew
+**/android/gradlew.bat
+**/android/gradle/wrapper/gradle-wrapper.jar
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+
+# =====================================================
+#  iOS
+# =====================================================
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/xcuserdata/
+*.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+
+# =====================================================
+#  EDITORES Y SISTEMA OPERATIVO
+# =====================================================
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+*.swp
+*.log
