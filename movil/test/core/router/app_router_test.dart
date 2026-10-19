@@ -5,7 +5,7 @@
 
 import 'package:app_bienestar/core/router/app_router.dart';
 import 'package:app_bienestar/core/router/rutas.dart';
-import 'package:app_bienestar/features/auth/registro/presentation/registro_pagina.dart';
+import 'package:app_bienestar/features/auth/inicio_sesion/presentation/inicio_sesion_pagina.dart';
 import 'package:app_bienestar/features/onboarding/games/presentation/views/games_view.dart';
 import 'package:app_bienestar/features/onboarding/home/presentation/views/home_view.dart';
 import 'package:app_bienestar/features/onboarding/profile/presentation/views/profile_view.dart';
@@ -127,47 +127,60 @@ void main() {
   });
 
   group('Protección de rutas por sesión', () {
-    testWidgets('sin sesión, abrir la app lleva a /registro', (tester) async {
+    testWidgets('sin sesión, abrir la app lleva a /login', (tester) async {
       final router = await montarApp(tester, sesion: false);
 
-      expect(ubicacion(router), Rutas.registro);
-      expect(find.byType(RegistroPagina), findsOneWidget);
+      expect(ubicacion(router), Rutas.login);
+      expect(find.byType(InicioSesionPagina), findsOneWidget);
       expect(barra, findsNothing);
     });
 
-    testWidgets('sin sesión, una ruta privada redirige a /registro', (tester) async {
+    testWidgets('sin sesión, una ruta privada redirige a /login', (tester) async {
       final router = await montarApp(tester, sesion: false);
 
       router.go(Rutas.perfil);
       await tester.pumpAndSettle();
-      expect(ubicacion(router), Rutas.registro);
+      expect(ubicacion(router), Rutas.login);
     });
 
-    testWidgets('al cerrar sesión, el router envía a /registro', (tester) async {
+    testWidgets('/verificacion sin correo vuelve a /login', (tester) async {
+      final router = await montarApp(tester, sesion: false);
+
+      router.go(Rutas.verificacion); // sin extra, como al reiniciar la app
+      await tester.pumpAndSettle();
+      expect(ubicacion(router), Rutas.login);
+    });
+
+    testWidgets('al cerrar sesión, el router envía a /login', (tester) async {
       final sesion = ValueNotifier<bool>(true);
       final router = await montarApp(tester, sesionCambiante: sesion);
       expect(ubicacion(router), Rutas.inicio);
 
       sesion.value = false; // equivale a supabase.auth.signOut()
       await tester.pumpAndSettle();
-      expect(ubicacion(router), Rutas.registro);
+      expect(ubicacion(router), Rutas.login);
     });
   });
 
   group('redirigirPorSesion (regla pura)', () {
-    test('sin sesión: rutas privadas → /registro', () {
-      expect(redirigirPorSesion(Rutas.inicio, haySesion: false), Rutas.registro);
-      expect(redirigirPorSesion(Rutas.encuesta, haySesion: false), Rutas.registro);
+    test('sin sesión: rutas privadas → /login', () {
+      expect(redirigirPorSesion(Rutas.inicio, haySesion: false), Rutas.login);
+      expect(redirigirPorSesion(Rutas.encuesta, haySesion: false), Rutas.login);
     });
 
     test('sin sesión: rutas públicas no se redirigen', () {
+      expect(redirigirPorSesion(Rutas.login, haySesion: false), isNull);
       expect(redirigirPorSesion(Rutas.registro, haySesion: false), isNull);
       expect(redirigirPorSesion(Rutas.verificacion, haySesion: false), isNull);
     });
 
-    test('con sesión no se redirige nada (no interrumpe el flujo de RF-03)', () {
+    test('con sesión, las demás rutas no se redirigen (flujo de RF-03)', () {
       expect(redirigirPorSesion(Rutas.inicio, haySesion: true), isNull);
       expect(redirigirPorSesion(Rutas.registro, haySesion: true), isNull);
+    });
+
+    test('con sesión, /login lleva al Inicio', () {
+      expect(redirigirPorSesion(Rutas.login, haySesion: true), Rutas.inicio);
     });
   });
 }
