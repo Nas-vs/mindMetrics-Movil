@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/inicio_sesion/presentation/inicio_sesion_pagina.dart';
 import '../../features/auth/registro/presentation/registro_pagina.dart';
+import '../../features/auth/verificacion/domain/argumentos_verificacion.dart';
+import '../../features/auth/verificacion/presentation/verificacion_pagina.dart';
 import '../../features/onboarding/games/presentation/viewmodels/games_viewmodel.dart';
 import '../../features/onboarding/games/presentation/views/games_view.dart';
 import '../../features/onboarding/home/presentation/viewmodels/home_viewmodel.dart';
@@ -19,7 +22,7 @@ import 'rutas.dart';
 ///
 /// [haySesion] se inyecta para poder probar el router sin Supabase.
 /// [refrescar] vuelve a evaluar el redirect cuando cambia la sesión
-/// (ej. al cerrar sesión se envía al usuario a /registro).
+/// (ej. al cerrar sesión se envía al usuario a /login).
 GoRouter crearRouter({
   required bool Function() haySesion,
   Listenable? refrescar,
@@ -37,14 +40,35 @@ GoRouter crearRouter({
         redirigirPorSesion(estado.matchedLocation, haySesion: haySesion()),
     routes: [
       GoRoute(
-        path: Rutas.registro,
-        // '1.0' = política vigente insertada por la migración RF-02.
-        builder: (_, _) => const RegistroPagina(versionPolitica: '1.0'),
+        // RF-04. `extra` opcional: aviso al llegar (ej. desde RF-05 CA-7).
+        path: Rutas.login,
+        builder: (_, estado) => InicioSesionPagina(
+          mensajeInicial: estado.extra is String ? estado.extra! as String : null,
+        ),
       ),
       GoRoute(
-        // Placeholder hasta que exista la pantalla de RF-05.
+        path: Rutas.registro,
+        // '1.0' = política vigente insertada por la migración RF-02.
+        builder: (context, _) => RegistroPagina(
+          versionPolitica: '1.0',
+          onIniciarSesion: () => context.go(Rutas.login),
+        ),
+      ),
+      GoRoute(
+        // RF-05. Desde el registro llega el correo (String); desde el login,
+        // un ArgumentosVerificacion. Sin datos (ej. al reiniciar la app, o
+        // cuando el router se reevalúa al crearse la sesión) no hay a quién
+        // verificar: con sesión se va al Inicio y sin sesión al login.
         path: Rutas.verificacion,
-        builder: (_, estado) => _VerificacionTemporal(correo: estado.extra),
+        redirect: (_, estado) {
+          if (ArgumentosVerificacion.desdeExtra(estado.extra) != null) {
+            return null;
+          }
+          return haySesion() ? Rutas.inicio : Rutas.login;
+        },
+        builder: (_, estado) => VerificacionPagina(
+          argumentos: ArgumentosVerificacion.desdeExtra(estado.extra)!,
+        ),
       ),
 
       // CA-1: Inicio, Juegos y Perfil son ramas del shell → muestran la barra.
@@ -102,12 +126,14 @@ GoRouter crearRouter({
 
 /// Regla de protección de rutas.
 ///
-/// Sin sesión, cualquier ruta que no sea pública lleva a /registro.
-/// Con sesión no se redirige nada: así, después de `signUp`, la pantalla de
-/// registro puede navegar a /verificacion sin que el router la interrumpa.
+/// Sin sesión, cualquier ruta que no sea pública lleva a /login (RF-04).
+/// Con sesión, /login lleva al Inicio (ya entró: p. ej. al verificar el
+/// código de RF-05 o al entrar desde un celular conocido). Las demás rutas
+/// no se redirigen, para no interrumpir el flujo de registro y verificación.
 String? redirigirPorSesion(String ubicacion, {required bool haySesion}) {
-  if (haySesion || Rutas.publicas.contains(ubicacion)) return null;
-  return Rutas.registro;
+  if (haySesion) return ubicacion == Rutas.login ? Rutas.inicio : null;
+  if (Rutas.publicas.contains(ubicacion)) return null;
+  return Rutas.login;
 }
 
 /// Convierte un Stream (ej. `supabase.auth.onAuthStateChange`) en un
@@ -123,40 +149,5 @@ class RefrescoPorStream extends ChangeNotifier {
   void dispose() {
     _suscripcion.cancel();
     super.dispose();
-  }
-}
-
-/// Placeholder de RF-05 (se movió desde main.dart sin cambios de diseño).
-class _VerificacionTemporal extends StatelessWidget {
-  const _VerificacionTemporal({required this.correo});
-
-  final Object? correo;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.check_circle, size: 72, color: Colors.green),
-              const SizedBox(height: 16),
-              Text(
-                'Cuenta creada para\n${correo ?? ''}',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 18),
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: () => context.go(Rutas.inicio),
-                child: const Text('Ir al inicio'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
