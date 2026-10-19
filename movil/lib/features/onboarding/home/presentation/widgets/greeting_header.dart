@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/router/rutas.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../survey/presentation/views/daily_survey_view.dart';
 
 /// Encabezado con saludo "Hola, @Usuario" y botón circular/cuadrado con "+".
 class GreetingHeader extends StatelessWidget {
@@ -31,11 +32,8 @@ class GreetingHeader extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const DailySurveyView()),
-              );
-            },
+            // Pantalla de profundidad: se abre sin barra inferior (RF-10 CA-2).
+            onTap: () => context.push(Rutas.encuesta),
             child: Container(
               width: 44,
               height: 44,
