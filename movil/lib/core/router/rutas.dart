@@ -4,6 +4,7 @@ class Rutas {
   Rutas._(); // Solo constantes: no se instancia.
 
   // Sin sesión
+  static const login = '/login';
   static const registro = '/registro';
   static const verificacion = '/verificacion';
 
@@ -16,6 +17,5 @@ class Rutas {
   static const encuesta = '/encuesta';
 
   /// Rutas a las que se puede entrar sin sesión.
-  /// Cuando exista el login (RF-04) se agrega aquí.
-  static const publicas = {registro, verificacion};
+  static const publicas = {login, registro, verificacion};
 }
