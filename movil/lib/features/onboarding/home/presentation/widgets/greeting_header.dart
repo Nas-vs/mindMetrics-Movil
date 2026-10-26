@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../../core/router/rutas.dart';
 import '../../../core/constants/app_colors.dart';
 
-/// Encabezado con saludo "Hola, @Usuario" y botón circular/cuadrado con "+".
+/// Encabezado con saludo "Hola @[nickname]", fecha actual debajo (RF-07)
+/// y botón con "+".
 class GreetingHeader extends StatelessWidget {
   final String username;
+  final String? fecha;
 
-  const GreetingHeader({super.key, required this.username});
+  const GreetingHeader({super.key, required this.username, this.fecha});
 
   @override
   Widget build(BuildContext context) {
@@ -15,15 +18,32 @@ class GreetingHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Flexible(
-          child: Text(
-            'Hola, @$username',
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textDark,
-              letterSpacing: -0.2,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Hola @$username',
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              if (fecha != null && fecha!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  fecha!,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(width: 14),

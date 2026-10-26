@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/hamburger_button.dart';
 import '../viewmodels/home_viewmodel.dart';
@@ -33,7 +34,10 @@ class HomeView extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Saludo y botón de encuesta (+)
-              GreetingHeader(username: viewModel.username),
+              GreetingHeader(
+                username: viewModel.username,
+                fecha: viewModel.fechaActual,
+              ),
 
               const SizedBox(height: 28),
 

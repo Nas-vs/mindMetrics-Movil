@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/consentimiento/presentation/consentimiento_pagina.dart';
 import '../../features/auth/inicio_sesion/presentation/inicio_sesion_pagina.dart';
 import '../../features/auth/recuperar_contrasena/presentation/recuperar_contrasena_pagina.dart';
 import '../../features/auth/recuperar_contrasena/presentation/restablecer_contrasena_pagina.dart';
@@ -53,7 +54,9 @@ GoRouter crearRouter({
         // RF-04. `extra` opcional: aviso al llegar (ej. desde RF-05 CA-7).
         path: Rutas.login,
         builder: (context, estado) => InicioSesionPagina(
-          mensajeInicial: estado.extra is String ? estado.extra! as String : null,
+          mensajeInicial: estado.extra is String
+              ? estado.extra! as String
+              : null,
           onOlvidoContrasena: () => context.go(Rutas.recuperarContrasena),
         ),
       ),
@@ -73,10 +76,20 @@ GoRouter crearRouter({
         builder: (_, _) => const RestablecerContrasenaPagina(),
       ),
       GoRoute(
+        // RF-02: consentimiento informado antes de crear la cuenta.
+        path: Rutas.consentimiento,
+        builder: (context, _) =>
+            ConsentimientoPagina(onVolver: () => context.go(Rutas.login)),
+      ),
+      GoRoute(
         path: Rutas.registro,
-        // '1.0' = política vigente insertada por la migración RF-02.
-        builder: (context, _) => RegistroPagina(
-          versionPolitica: '1.0',
+        redirect: (_, estado) {
+          final version = estado.extra;
+          if (version is String && version.isNotEmpty) return null;
+          return Rutas.consentimiento;
+        },
+        builder: (context, estado) => RegistroPagina(
+          versionPolitica: estado.extra! as String,
           onIniciarSesion: () => context.go(Rutas.login),
         ),
       ),

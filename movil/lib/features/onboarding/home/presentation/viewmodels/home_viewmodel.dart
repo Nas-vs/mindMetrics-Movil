@@ -1,18 +1,37 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../data/models/home_summary_model.dart';
 import '../../data/repositories/home_repository.dart';
 
-/// ViewModel para la pantalla de Home (patrón MVVM).
+/// ViewModel principal de la vista Home (MVVM).
+/// Gestiona el estado reactivo de la pantalla sin acoplar la UI a los datos.
 class HomeViewModel extends ChangeNotifier {
   final HomeRepository _repository;
+  final DateTime Function() _ahora;
+  StreamSubscription<AuthState>? _authSub;
 
   HomeSummaryModel _summary = HomeSummaryModel.initial();
   bool _isLoading = false;
   String? _errorMessage;
 
-  HomeViewModel({HomeRepository? repository})
-      : _repository = repository ?? MockHomeRepository() {
+  HomeViewModel({HomeRepository? repository, DateTime Function()? ahora})
+    : _repository = repository ?? MockHomeRepository(),
+      _ahora = ahora ?? DateTime.now {
     loadSummary();
+    _escucharCambiosDeSesion();
+  }
+
+  void _escucharCambiosDeSesion() {
+    try {
+      _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((_) {
+        loadSummary();
+      });
+    } catch (_) {
+      // En pruebas sin Supabase inicializado no se suscribe al stream.
+    }
   }
 
   // Getters
@@ -25,6 +44,41 @@ class HomeViewModel extends ChangeNotifier {
   String get registroEstimado => _summary.registroEstimado;
   String get rachaDias => _summary.rachaDias;
   String get rachaTexto => _summary.rachaTexto;
+
+  /// RF-07 CA-3: Fecha actual en formato largo, ej. "sábado, 26 de septiembre".
+  String get fechaActual => formatearFechaLarga(_ahora());
+
+  static const _diasSemana = [
+    'lunes',
+    'martes',
+    'miércoles',
+    'jueves',
+    'viernes',
+    'sábado',
+    'domingo',
+  ];
+
+  static const _meses = [
+    'enero',
+    'febrero',
+    'marzo',
+    'abril',
+    'mayo',
+    'junio',
+    'julio',
+    'agosto',
+    'septiembre',
+    'octubre',
+    'noviembre',
+    'diciembre',
+  ];
+
+  /// Formatea [fecha] como "<día de semana>, <día> de <mes>".
+  static String formatearFechaLarga(DateTime fecha) {
+    final diaSemana = _diasSemana[fecha.weekday - 1];
+    final mes = _meses[fecha.month - 1];
+    return '$diaSemana, ${fecha.day} de $mes';
+  }
 
   /// Carga las métricas del usuario.
   Future<void> loadSummary() async {
@@ -56,5 +110,11 @@ class HomeViewModel extends ChangeNotifier {
       rachaTexto: rachaTexto,
     );
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
   }
 }
