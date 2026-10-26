@@ -224,28 +224,37 @@ class CampoConEtiqueta extends StatelessWidget {
   }
 }
 
-/// Enlace subrayado en el color primario ("¿Olvidó su contraseña?",
-/// "Reenviar código"). Con [onPressed] null se ve atenuado.
+/// Enlace subrayado ("¿Olvidó su contraseña?", "Reenviar código",
+/// "Cancelar"). En el color primario, o gris oscuro si [secundario]. Con
+/// [onPressed] null se ve atenuado.
 class EnlaceAuth extends StatelessWidget {
-  const EnlaceAuth({super.key, required this.texto, required this.onPressed});
+  const EnlaceAuth({
+    super.key,
+    required this.texto,
+    required this.onPressed,
+    this.secundario = false,
+  });
 
   final String texto;
   final VoidCallback? onPressed;
+
+  /// true: "Cancelar" (texto oscuro, sin negrita), como en el diseño.
+  final bool secundario;
 
   @override
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: onPressed,
       style: TextButton.styleFrom(
-        foregroundColor: AppColores.primario,
+        foregroundColor: secundario ? AppColores.texto : AppColores.primario,
         minimumSize: const Size(48, 48), // área táctil mínima
         padding: const EdgeInsets.symmetric(horizontal: 4),
       ),
       child: Text(
         texto,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 16,
-          fontWeight: FontWeight.w700,
+          fontWeight: secundario ? FontWeight.w400 : FontWeight.w700,
           decoration: TextDecoration.underline,
         ),
       ),

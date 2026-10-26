@@ -24,6 +24,22 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- RF-06: el enlace del correo de recuperación abre la app con
+                 mindmetrics://restablecer-contrasena (supabase_flutter lo
+                 procesa con app_links). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="mindmetrics"
+                    android:host="restablecer-contrasena"/>
+            </intent-filter>
+            <!-- El enlace lo maneja supabase_flutter, no go_router: sin esto
+                 Flutter también intentaría abrirlo como ruta y fallaría. -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false"/>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

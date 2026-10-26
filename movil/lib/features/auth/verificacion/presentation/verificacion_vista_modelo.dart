@@ -20,8 +20,9 @@ class VerificacionVistaModelo extends Notifier<VerificacionEstado> {
   /// CA-5: "Reenviar en 00:59". Coincide con `max_frequency = "60s"`.
   static const esperaReenvio = 60;
 
-  /// Coincide con `otp_expiry = 600` del config.toml (10 minutos).
-  static const vigenciaCodigo = Duration(minutes: 10);
+  /// Coincide con `otp_expiry = 1800` del config.toml (30 minutos; RF-06
+  /// lo subió de 10 a 30 y aplica a todos los códigos por correo).
+  static const vigenciaCodigo = Duration(minutes: 30);
 
   Timer? _temporizador;
   DateTime _codigoEnviadoEn = DateTime.now();
