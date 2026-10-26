@@ -60,10 +60,9 @@ class _InicioSesionPaginaState extends ConsumerState<InicioSesionPagina> {
     if (!_camposLlenos) return;
     FocusScope.of(context).unfocus();
     setState(() => _errorFormulario = null);
-    await ref.read(inicioSesionVistaModeloProvider.notifier).iniciarSesion(
-          correo: _correo.text,
-          contrasena: _contrasena.text,
-        );
+    await ref
+        .read(inicioSesionVistaModeloProvider.notifier)
+        .iniciarSesion(correo: _correo.text, contrasena: _contrasena.text);
   }
 
   void _mostrarAviso(String texto) {
@@ -112,8 +111,10 @@ class _InicioSesionPaginaState extends ConsumerState<InicioSesionPagina> {
       case ErrorInicioSesion.bloqueado:
         // CA-7
         _contrasena.clear();
-        setState(() => _errorFormulario =
-            'Demasiados intentos. Intenta de nuevo en 15 minutos');
+        setState(
+          () => _errorFormulario =
+              'Demasiados intentos. Intenta de nuevo en 15 minutos',
+        );
       case ErrorInicioSesion.demasiadosCorreos:
         _mostrarAviso(
           'Ya te enviamos un código hace poco. Espera un momento e intenta de nuevo',
@@ -136,7 +137,7 @@ class _InicioSesionPaginaState extends ConsumerState<InicioSesionPagina> {
 
     return FondoAuth(
       pie: _EnlaceRegistro(
-        onTap: cargando ? null : () => context.go(Rutas.registro),
+        onTap: cargando ? null : () => context.go(Rutas.consentimiento),
       ),
       tarjeta: AutofillGroup(
         child: Column(
@@ -147,8 +148,9 @@ class _InicioSesionPaginaState extends ConsumerState<InicioSesionPagina> {
               child: TextField(
                 controller: _correo,
                 enabled: !cargando, // CA-3: controles bloqueados
-                decoration:
-                    const InputDecoration(hintText: 'correo@dominio.com'),
+                decoration: const InputDecoration(
+                  hintText: 'correo@dominio.com',
+                ),
                 keyboardType: TextInputType.emailAddress,
                 autocorrect: false,
                 enableSuggestions: false,
@@ -181,14 +183,16 @@ class _InicioSesionPaginaState extends ConsumerState<InicioSesionPagina> {
                     tooltip: _ocultarContrasena
                         ? 'Mostrar contraseña'
                         : 'Ocultar contraseña',
-                    icon: Icon(_ocultarContrasena
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined),
+                    icon: Icon(
+                      _ocultarContrasena
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
                     onPressed: cargando
                         ? null
                         : () => setState(
-                              () => _ocultarContrasena = !_ocultarContrasena,
-                            ),
+                            () => _ocultarContrasena = !_ocultarContrasena,
+                          ),
                   ),
                 ),
               ),
@@ -238,12 +242,19 @@ class _MensajeError extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline, size: 18, color: AppColores.destructivo),
+          const Icon(
+            Icons.error_outline,
+            size: 18,
+            color: AppColores.destructivo,
+          ),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
               texto,
-              style: const TextStyle(color: AppColores.destructivo, fontSize: 14),
+              style: const TextStyle(
+                color: AppColores.destructivo,
+                fontSize: 14,
+              ),
             ),
           ),
         ],

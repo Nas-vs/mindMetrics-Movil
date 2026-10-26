@@ -5,6 +5,7 @@ class Rutas {
 
   // Sin sesión
   static const login = '/login';
+  static const consentimiento = '/consentimiento';
   static const registro = '/registro';
   static const verificacion = '/verificacion';
   static const recuperarContrasena = '/recuperar-contrasena';
@@ -23,6 +24,7 @@ class Rutas {
   /// Rutas a las que se puede entrar sin sesión.
   static const publicas = {
     login,
+    consentimiento,
     registro,
     verificacion,
     recuperarContrasena,
