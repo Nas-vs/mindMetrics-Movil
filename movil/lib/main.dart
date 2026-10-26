@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/router/app_router.dart';
+import 'core/router/estado_recuperacion.dart';
 import 'features/onboarding/core/constants/app_colors.dart';
 
 /// Supabase local (`supabase start`). El emulador de Android ve el host en
@@ -36,6 +37,8 @@ Future<void> main() async {
   final router = crearRouter(
     haySesion: () => auth.currentSession != null,
     refrescar: RefrescoPorStream(auth.onAuthStateChange),
+    // RF-06: enlace de recuperación de contraseña (mindmetrics://...).
+    recuperacion: EstadoRecuperacion(auth.onAuthStateChange),
   );
 
   runApp(ProviderScope(child: MyApp(router: router)));

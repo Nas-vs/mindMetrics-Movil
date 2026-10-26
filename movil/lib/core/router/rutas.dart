@@ -7,6 +7,10 @@ class Rutas {
   static const login = '/login';
   static const registro = '/registro';
   static const verificacion = '/verificacion';
+  static const recuperarContrasena = '/recuperar-contrasena';
+
+  // Solo con la sesión temporal del enlace del correo (RF-06)
+  static const restablecerContrasena = '/restablecer-contrasena';
 
   // Pantallas de nivel superior: muestran la barra inferior (CA-1)
   static const inicio = '/inicio';
@@ -17,5 +21,10 @@ class Rutas {
   static const encuesta = '/encuesta';
 
   /// Rutas a las que se puede entrar sin sesión.
-  static const publicas = {login, registro, verificacion};
+  static const publicas = {
+    login,
+    registro,
+    verificacion,
+    recuperarContrasena,
+  };
 }
