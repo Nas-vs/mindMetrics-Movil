@@ -3,9 +3,14 @@
 //
 // El router recibe `haySesion` inyectado, así que no hace falta Supabase.
 
+import 'dart:async';
+
 import 'package:app_bienestar/core/router/app_router.dart';
+import 'package:app_bienestar/core/router/estado_recuperacion.dart';
 import 'package:app_bienestar/core/router/rutas.dart';
 import 'package:app_bienestar/features/auth/inicio_sesion/presentation/inicio_sesion_pagina.dart';
+import 'package:app_bienestar/features/auth/recuperar_contrasena/presentation/recuperar_contrasena_pagina.dart';
+import 'package:app_bienestar/features/auth/recuperar_contrasena/presentation/restablecer_contrasena_pagina.dart';
 import 'package:app_bienestar/features/onboarding/games/presentation/views/games_view.dart';
 import 'package:app_bienestar/features/onboarding/home/presentation/views/home_view.dart';
 import 'package:app_bienestar/features/onboarding/profile/presentation/views/profile_view.dart';
@@ -15,12 +20,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show AuthChangeEvent, AuthException, AuthState;
 
 /// Monta la app con el router real en una pantalla de celular (412×915 dp).
 Future<GoRouter> montarApp(
   WidgetTester tester, {
   bool sesion = true,
   ValueNotifier<bool>? sesionCambiante,
+  EstadoRecuperacion? recuperacion,
 }) async {
   tester.view.physicalSize = const Size(1236, 2745);
   tester.view.devicePixelRatio = 3;
@@ -29,6 +37,7 @@ Future<GoRouter> montarApp(
   final router = crearRouter(
     haySesion: () => sesionCambiante?.value ?? sesion,
     refrescar: sesionCambiante,
+    recuperacion: recuperacion,
   );
   await tester.pumpWidget(
     ProviderScope(
@@ -181,6 +190,126 @@ void main() {
 
     test('con sesión, /login lleva al Inicio', () {
       expect(redirigirPorSesion(Rutas.login, haySesion: true), Rutas.inicio);
+    });
+  });
+
+  group('RF-06 recuperar contraseña', () {
+    testWidgets('"¿Olvidó su contraseña?" abre /recuperar-contrasena',
+        (tester) async {
+      final router = await montarApp(tester, sesion: false);
+
+      await tester.tap(find.text('¿Olvidó su contraseña?'));
+      await tester.pumpAndSettle();
+      expect(ubicacion(router), Rutas.recuperarContrasena);
+      expect(find.byType(RecuperarContrasenaPagina), findsOneWidget);
+    });
+
+    testWidgets('el enlace del correo lleva a /restablecer-contrasena',
+        (tester) async {
+      final eventos = StreamController<AuthState>();
+      addTearDown(eventos.close);
+      final sesion = ValueNotifier<bool>(false);
+      final recuperacion = EstadoRecuperacion(eventos.stream);
+      final router = await montarApp(
+        tester,
+        sesionCambiante: sesion,
+        recuperacion: recuperacion,
+      );
+      expect(ubicacion(router), Rutas.login);
+
+      // Lo que hace supabase_flutter al abrir mindmetrics://...?code=...
+      sesion.value = true;
+      eventos.add(const AuthState(AuthChangeEvent.passwordRecovery, null));
+      await tester.pumpAndSettle();
+      expect(ubicacion(router), Rutas.restablecerContrasena);
+      expect(find.byType(RestablecerContrasenaPagina), findsOneWidget);
+
+      // Con la sesión temporal no se puede ir a otra parte.
+      router.go(Rutas.inicio);
+      await tester.pumpAndSettle();
+      expect(ubicacion(router), Rutas.restablecerContrasena);
+
+      // Al cambiar la contraseña (o cancelar) se cierra la sesión → login.
+      sesion.value = false;
+      eventos.add(const AuthState(AuthChangeEvent.signedOut, null));
+      await tester.pumpAndSettle();
+      expect(ubicacion(router), Rutas.login);
+    });
+
+    testWidgets('enlace vencido muestra el aviso en /recuperar-contrasena (CA-7)',
+        (tester) async {
+      final eventos = StreamController<AuthState>();
+      addTearDown(eventos.close);
+      final recuperacion = EstadoRecuperacion(eventos.stream);
+      final router = await montarApp(
+        tester,
+        sesion: false,
+        recuperacion: recuperacion,
+      );
+
+      eventos.addError(
+        const AuthException('Email link is invalid or has expired',
+            statusCode: 'otp_expired', code: 'access_denied'),
+      );
+      await tester.pumpAndSettle();
+      expect(ubicacion(router), Rutas.recuperarContrasena);
+      expect(find.textContaining('Este enlace ya no es válido'), findsOneWidget);
+      expect(find.text('Solicitar uno nuevo'), findsOneWidget);
+      // La pantalla ya mostró el aviso: el router no vuelve a forzarlo.
+      expect(recuperacion.enlaceInvalido, isFalse);
+    });
+  });
+
+  group('redirigirPorSesion · RF-06', () {
+    test('/recuperar-contrasena es pública', () {
+      expect(redirigirPorSesion(Rutas.recuperarContrasena, haySesion: false), isNull);
+    });
+
+    test('/restablecer-contrasena sin sesión → /login', () {
+      expect(redirigirPorSesion(Rutas.restablecerContrasena, haySesion: false),
+          Rutas.login);
+    });
+
+    test('recuperando, todo lleva a /restablecer-contrasena', () {
+      for (final ruta in [Rutas.login, Rutas.inicio, Rutas.perfil]) {
+        expect(
+          redirigirPorSesion(ruta, haySesion: true, recuperando: true),
+          Rutas.restablecerContrasena,
+        );
+      }
+      expect(
+        redirigirPorSesion(Rutas.restablecerContrasena,
+            haySesion: true, recuperando: true),
+        isNull,
+      );
+    });
+
+    test('enlace inválido sin sesión → /recuperar-contrasena', () {
+      expect(
+        redirigirPorSesion(Rutas.login, haySesion: false, enlaceInvalido: true),
+        Rutas.recuperarContrasena,
+      );
+    });
+  });
+
+  group('EstadoRecuperacion.esErrorDeEnlace', () {
+    test('reconoce los errores del enlace del correo', () {
+      expect(
+        EstadoRecuperacion.esErrorDeEnlace(
+          const AuthException('x', statusCode: 'otp_expired', code: 'access_denied'),
+        ),
+        isTrue,
+      );
+    });
+
+    test('ignora otros errores de Auth (p. ej. refresh token)', () {
+      expect(
+        EstadoRecuperacion.esErrorDeEnlace(
+          const AuthException('x', code: 'refresh_token_not_found'),
+        ),
+        isFalse,
+      );
+      expect(EstadoRecuperacion.esErrorDeEnlace(Exception('x')), isFalse);
     });
   });
 }
