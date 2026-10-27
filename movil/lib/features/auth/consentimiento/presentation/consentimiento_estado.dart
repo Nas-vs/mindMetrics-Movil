@@ -13,3 +13,5 @@ class ConsentimientoEstado {
   final PoliticaPrivacidad? politica;
   final ErrorConsentimiento? error;
 }
+
+//test
