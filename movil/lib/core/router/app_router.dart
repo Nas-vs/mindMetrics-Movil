@@ -19,6 +19,7 @@ import '../../features/onboarding/profile/presentation/viewmodels/profile_viewmo
 import '../../features/onboarding/profile/presentation/views/profile_view.dart';
 import '../../features/onboarding/shell/presentation/views/main_shell_view.dart';
 import '../../features/onboarding/survey/presentation/views/daily_survey_view.dart';
+import '../../features/recordatorio/presentation/recordatorio_pagina.dart';
 import '../widgets/con_view_model.dart';
 import 'estado_evaluacion_inicial.dart';
 import 'estado_recuperacion.dart';
@@ -167,6 +168,12 @@ GoRouter crearRouter({
         path: Rutas.encuesta,
         parentNavigatorKey: navegadorRaiz,
         builder: (_, _) => const DailySurveyView(),
+      ),
+      GoRoute(
+        // RF-22: activar el recordatorio diario y elegir la hora.
+        path: Rutas.recordatorio,
+        parentNavigatorKey: navegadorRaiz,
+        builder: (_, _) => const RecordatorioPagina(),
       ),
       GoRoute(
         // Avatar conversacional: la encuesta inicial hablando con la mascota.
