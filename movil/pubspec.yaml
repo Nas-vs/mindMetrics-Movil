@@ -39,6 +39,11 @@ dependencies:
   supabase_flutter: ^2.18.0
   flutter_secure_storage: ^11.2.0
   uuid: ^4.6.0
+  flutter_svg: ^2.2.0
+  # Avatar por voz (Fase 4): escuchar, hablar y llamar a las líneas de ayuda
+  speech_to_text: ^7.5.0
+  flutter_tts: ^4.2.5
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +69,11 @@ flutter:
 
   assets:
     - assets/images/
+    # Avatar conversacional: una carpeta por personaje (mismas capas en todas)
+    - assets/avatar/nimbus/
+    - assets/avatar/plip/
+    # Guiones de conversación del avatar (datos, no código)
+    - assets/guiones/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

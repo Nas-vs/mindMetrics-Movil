@@ -49,3 +49,16 @@ insert into public.registro_factores (registro_id, factor_id)
 select r.id, case when r.nivel <= 2 then 2 else 1 end
 from public.registros_animo r
 where r.usuario_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+
+-- ---------------------------------------------------------------------
+-- Solo desarrollo local (el seed no se aplica en el proyecto en la nube):
+-- usuario con el que se conecta el servicio `python manage.py motor_supabase`
+-- del repo web. En la nube se crea a mano con una clave real (ver
+-- docs/avatar/CONTRATO_MOTOR.md).
+-- ---------------------------------------------------------------------
+do $$
+begin
+  if not exists (select 1 from pg_roles where rolname = 'motor_servicio_local') then
+    create role motor_servicio_local login password 'motor_local' in role motor_mindmetrics;
+  end if;
+end $$;

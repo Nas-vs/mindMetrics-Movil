@@ -193,6 +193,38 @@ void main() {
     });
   });
 
+  group('redirigirPorSesion · encuesta inicial pendiente (avatar)', () {
+    test('al entrar (/login) o en rutas privadas → /avatar', () {
+      for (final ruta in [Rutas.login, Rutas.inicio, Rutas.juegos, Rutas.perfil, Rutas.encuesta]) {
+        expect(
+          redirigirPorSesion(ruta, haySesion: true, encuestaInicialPendiente: true),
+          Rutas.avatar,
+          reason: ruta,
+        );
+      }
+    });
+
+    test('estando en /avatar no se redirige (sin bucle)', () {
+      expect(redirigirPorSesion(Rutas.avatar, haySesion: true, encuestaInicialPendiente: true), isNull);
+    });
+
+    test('no interrumpe registro ni verificación (rutas públicas)', () {
+      expect(redirigirPorSesion(Rutas.verificacion, haySesion: true, encuestaInicialPendiente: true), isNull);
+      expect(redirigirPorSesion(Rutas.registro, haySesion: true, encuestaInicialPendiente: true), isNull);
+    });
+
+    test('la recuperación de contraseña tiene prioridad', () {
+      expect(
+        redirigirPorSesion(Rutas.inicio, haySesion: true, recuperando: true, encuestaInicialPendiente: true),
+        Rutas.restablecerContrasena,
+      );
+    });
+
+    test('sin sesión manda el login, aunque estuviera pendiente', () {
+      expect(redirigirPorSesion(Rutas.inicio, haySesion: false, encuestaInicialPendiente: true), Rutas.login);
+    });
+  });
+
   group('RF-06 recuperar contraseña', () {
     testWidgets('"¿Olvidó su contraseña?" abre /recuperar-contrasena',
         (tester) async {

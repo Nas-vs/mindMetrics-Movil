@@ -1,0 +1,134 @@
+{
+  "nota": "Conversaciones completas. Cada paso: lo que dice (o toca) el usuario y el tipo de turno con el que responde el avatar. Los validan la referencia en Python y la prueba de Dart.",
+  "escenarios": [
+    {
+      "nombre": "camino feliz por voz",
+      "inicio": { "tipo": "pregunta", "campo": "genero", "emocion": "alegre" },
+      "pasos": [
+        { "dice": "Soy mujer", "tipo": "pregunta", "campo": "estado_relacion" },
+        { "dice": "soltera", "tipo": "pregunta", "campo": "situacion_trabajo" },
+        { "dice": "estoy en la universidad", "tipo": "pregunta", "campo": "hr_sueno" },
+        { "dice": "duermo como seis horas", "tipo": "pregunta", "campo": "hr_trabajo" },
+        { "dice": "cuarenta y cinco horas", "tipo": "pregunta", "campo": "hr_pantalla" },
+        { "dice": "unas cinco horas", "tipo": "pregunta", "campo": "hr_act_fis" },
+        { "dice": "2 horas", "tipo": "pregunta", "campo": "estres_laboral" },
+        { "dice": "un siete", "tipo": "pregunta", "campo": "estres_academico" },
+        { "dice": "ocho", "tipo": "pregunta", "campo": "estres_financ" },
+        { "dice": "seis", "tipo": "pregunta", "campo": "satisfaccion_laboral" },
+        { "dice": "cinco", "tipo": "pregunta", "campo": "cambio_emocional", "emocion": "empatico" },
+        { "dice": "cuatro", "tipo": "pregunta", "campo": "dificultad_concentra" },
+        { "dice": "a veces", "tipo": "pregunta", "campo": "apoyo_percibido", "emocion": "empatico" },
+        { "dice": "moderado", "tipo": "pregunta", "campo": "historial_panico" },
+        { "dice": "no, nunca", "tipo": "pregunta", "campo": "historial_familiar" },
+        { "dice": "sí, mi mamá", "tipo": "pregunta", "campo": "diagnostico_previo" },
+        { "dice": "no", "tipo": "pregunta", "campo": "tratamiento_previo" },
+        { "dice": "nunca", "tipo": "pregunta", "campo": "uso_sustancias" },
+        { "dice": "no", "tipo": "fin" }
+      ],
+      "respuestas": {
+        "genero": "femenino", "estado_relacion": "soltero", "situacion_trabajo": "estudiante",
+        "hr_sueno": 6, "hr_trabajo": 45, "hr_pantalla": 5, "hr_act_fis": 2,
+        "estres_laboral": 7, "estres_academico": 8, "estres_financ": 6, "satisfaccion_laboral": 5,
+        "cambio_emocional": 4, "dificultad_concentra": "ocasional", "apoyo_percibido": "moderado",
+        "historial_panico": false, "historial_familiar": true, "diagnostico_previo": false,
+        "tratamiento_previo": "ninguno", "uso_sustancias": false
+      },
+      "hubo_crisis": false
+    },
+    {
+      "nombre": "reconfirma cuando convierte de día a semana",
+      "hasta": "hr_trabajo",
+      "pasos": [
+        { "dice": "ocho horas al día", "tipo": "confirmacion", "campo": "hr_trabajo" },
+        { "dice": "sí", "tipo": "pregunta", "campo": "hr_pantalla" }
+      ],
+      "respuestas": { "hr_trabajo": 40 }
+    },
+    {
+      "nombre": "corrige en la confirmación con un valor nuevo",
+      "hasta": "hr_trabajo",
+      "pasos": [
+        { "dice": "ocho al día", "tipo": "confirmacion", "campo": "hr_trabajo" },
+        { "dice": "no, treinta y cinco", "tipo": "pregunta", "campo": "hr_pantalla" }
+      ],
+      "respuestas": { "hr_trabajo": 35 }
+    },
+    {
+      "nombre": "dice que no y vuelve a responder",
+      "hasta": "estres_laboral",
+      "pasos": [
+        { "dice": "mucho", "tipo": "confirmacion", "campo": "estres_laboral" },
+        { "dice": "no", "tipo": "aclaracion", "campo": "estres_laboral" },
+        { "dice": "nueve", "tipo": "pregunta", "campo": "estres_academico" }
+      ],
+      "respuestas": { "estres_laboral": 9 }
+    },
+    {
+      "nombre": "tras dos intentos muestra opciones y acepta el toque",
+      "hasta": "estado_relacion",
+      "pasos": [
+        { "dice": "pues es complicado", "tipo": "aclaracion", "campo": "estado_relacion", "opciones": 0 },
+        { "dice": "no sé cómo explicarlo", "tipo": "aclaracion", "campo": "estado_relacion", "opciones": 7 },
+        { "elige": "union libre", "tipo": "pregunta", "campo": "situacion_trabajo" }
+      ],
+      "respuestas": { "estado_relacion": "union libre" }
+    },
+    {
+      "nombre": "«como seis» es una respuesta, no el comando repetir",
+      "hasta": "hr_sueno",
+      "pasos": [
+        { "dice": "como seis", "tipo": "pregunta", "campo": "hr_trabajo" }
+      ],
+      "respuestas": { "hr_sueno": 6 }
+    },
+    {
+      "nombre": "fuera de rango",
+      "hasta": "hr_sueno",
+      "pasos": [
+        { "dice": "treinta horas", "tipo": "aclaracion", "campo": "hr_sueno", "contiene": "entre 0 y 24" },
+        { "dice": "ocho", "tipo": "pregunta", "campo": "hr_trabajo" }
+      ],
+      "respuestas": { "hr_sueno": 8 }
+    },
+    {
+      "nombre": "crisis interrumpe y se puede continuar",
+      "hasta": "cambio_emocional",
+      "pasos": [
+        { "dice": "a veces siento que no quiero vivir", "tipo": "crisis", "emocion": "empatico", "contiene": "Línea 106" },
+        { "dice": "no sé", "tipo": "crisis" },
+        { "dice": "sigamos", "tipo": "pregunta", "campo": "cambio_emocional" },
+        { "dice": "ocho", "tipo": "pregunta", "campo": "dificultad_concentra" }
+      ],
+      "respuestas": { "cambio_emocional": 8 },
+      "hubo_crisis": true
+    },
+    {
+      "nombre": "crisis durante una confirmación",
+      "hasta": "hr_trabajo",
+      "pasos": [
+        { "dice": "ocho al día", "tipo": "confirmacion", "campo": "hr_trabajo" },
+        { "dice": "me quiero morir", "tipo": "crisis" },
+        { "dice": "estoy bien, sigamos", "tipo": "pregunta", "campo": "hr_trabajo" }
+      ],
+      "hubo_crisis": true
+    },
+    {
+      "nombre": "repetir y pasar al formulario",
+      "hasta": "hr_sueno",
+      "pasos": [
+        { "dice": "repite", "tipo": "pregunta", "campo": "hr_sueno" },
+        { "dice": "¿cómo dijiste?", "tipo": "pregunta", "campo": "hr_sueno" },
+        { "dice": "prefiero el formulario", "tipo": "formulario" }
+      ]
+    }
+  ],
+  "respuestas_previas": {
+    "nota": "Para los escenarios con 'hasta': respuestas con las que se llega a esa pregunta.",
+    "genero": "mujer", "estado_relacion": "soltera", "situacion_trabajo": "estudiante",
+    "hr_sueno": "siete", "hr_trabajo": "cuarenta", "hr_pantalla": "tres", "hr_act_fis": "dos",
+    "estres_laboral": "cinco", "estres_academico": "cinco", "estres_financ": "cinco",
+    "satisfaccion_laboral": "cinco", "cambio_emocional": "cinco", "dificultad_concentra": "a veces",
+    "apoyo_percibido": "alto", "historial_panico": "no", "historial_familiar": "no",
+    "diagnostico_previo": "no", "tratamiento_previo": "nunca", "uso_sustancias": "no"
+  }
+}

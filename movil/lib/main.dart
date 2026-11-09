@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/router/app_router.dart';
+import 'core/router/estado_evaluacion_inicial.dart';
 import 'core/router/estado_recuperacion.dart';
 import 'features/onboarding/core/constants/app_colors.dart';
 
@@ -33,12 +34,17 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(url: _supabaseUrl, anonKey: _anonKey);
 
-  final auth = Supabase.instance.client.auth;
+  final cliente = Supabase.instance.client;
+  final auth = cliente.auth;
   final router = crearRouter(
     haySesion: () => auth.currentSession != null,
     refrescar: RefrescoPorStream(auth.onAuthStateChange),
     // RF-06: enlace de recuperación de contraseña (mindmetrics://...).
     recuperacion: EstadoRecuperacion(auth.onAuthStateChange),
+    // Encuesta inicial pendiente → el avatar la hace al entrar.
+    evaluacionInicial: EstadoEvaluacionInicial.supabase(cliente),
+    // RF-07: el nickname viaja en la sesión (app_metadata), sin consulta.
+    apodo: () => auth.currentUser?.appMetadata['nickname'] as String?,
   );
 
   runApp(ProviderScope(child: MyApp(router: router)));
