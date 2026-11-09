@@ -21,6 +21,9 @@ class Rutas {
   // Pantallas de profundidad: se abren encima del shell, sin barra (CA-2)
   static const encuesta = '/encuesta';
 
+  /// RF-22: configuración del recordatorio diario.
+  static const recordatorio = '/recordatorio';
+
   /// Evaluación inicial conversando con la mascota (avatar por voz).
   static const avatar = '/avatar';
 

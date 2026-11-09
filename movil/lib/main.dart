@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -9,6 +10,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/router/app_router.dart';
 import 'core/router/estado_evaluacion_inicial.dart';
 import 'core/router/estado_recuperacion.dart';
+import 'core/router/rutas.dart';
+import 'features/recordatorio/data/notificaciones_servicio.dart';
+import 'features/recordatorio/data/recordatorio_servicio.dart';
 import 'features/onboarding/core/constants/app_colors.dart';
 
 /// Supabase local (`supabase start`). El emulador de Android ve el host en
@@ -47,7 +51,34 @@ Future<void> main() async {
     apodo: () => auth.currentUser?.appMetadata['nickname'] as String?,
   );
 
-  runApp(ProviderScope(child: MyApp(router: router)));
+  // RF-22: recordatorio diario. Tocar la notificación abre el registro de
+  // ánimo (CA-4), con la app abierta o cerrada.
+  final notificaciones = NotificacionesLocales();
+  final abrioDesdeNotificacion = await notificaciones.inicializar(
+    alTocar: () => router.push(Rutas.encuesta),
+  );
+  final recordatorio = RecordatorioServicio.real(notificaciones: notificaciones);
+  if (auth.currentSession != null) unawaited(recordatorio.reprogramar());
+  auth.onAuthStateChange.listen((cambio) {
+    if (cambio.event == AuthChangeEvent.signedIn) {
+      unawaited(recordatorio.reprogramar());
+    } else if (cambio.event == AuthChangeEvent.signedOut) {
+      unawaited(recordatorio.cancelarTodo());
+    }
+  });
+
+  runApp(
+    ProviderScope(
+      overrides: [recordatorioServicioProvider.overrideWithValue(recordatorio)],
+      child: MyApp(router: router),
+    ),
+  );
+
+  if (abrioDesdeNotificacion) {
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => router.push(Rutas.encuesta),
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {
