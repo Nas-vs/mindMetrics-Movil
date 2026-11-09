@@ -10,6 +10,7 @@ import '../../features/auth/recuperar_contrasena/presentation/restablecer_contra
 import '../../features/auth/registro/presentation/registro_pagina.dart';
 import '../../features/auth/verificacion/domain/argumentos_verificacion.dart';
 import '../../features/auth/verificacion/presentation/verificacion_pagina.dart';
+import '../../features/avatar/presentation/conversacion_pagina.dart';
 import '../../features/onboarding/games/presentation/viewmodels/games_viewmodel.dart';
 import '../../features/onboarding/games/presentation/views/games_view.dart';
 import '../../features/onboarding/home/presentation/viewmodels/home_viewmodel.dart';
@@ -19,6 +20,7 @@ import '../../features/onboarding/profile/presentation/views/profile_view.dart';
 import '../../features/onboarding/shell/presentation/views/main_shell_view.dart';
 import '../../features/onboarding/survey/presentation/views/daily_survey_view.dart';
 import '../widgets/con_view_model.dart';
+import 'estado_evaluacion_inicial.dart';
 import 'estado_recuperacion.dart';
 import 'rutas.dart';
 
@@ -29,10 +31,15 @@ import 'rutas.dart';
 /// (ej. al cerrar sesión se envía al usuario a /login).
 /// [recuperacion] lleva el estado del enlace de recuperación (RF-06); es
 /// opcional para que las pruebas que no lo usan sigan igual.
+/// [evaluacionInicial] lleva al avatar a quien no ha hecho la encuesta
+/// inicial; [apodo] es el nickname con el que lo saluda (RF-07). Ambos son
+/// opcionales por la misma razón.
 GoRouter crearRouter({
   required bool Function() haySesion,
   Listenable? refrescar,
   EstadoRecuperacion? recuperacion,
+  EstadoEvaluacionInicial? evaluacionInicial,
+  String? Function()? apodo,
   String rutaInicial = Rutas.inicio,
 }) {
   // Navigator raíz: las pantallas de profundidad se apilan aquí, ENCIMA del
@@ -42,12 +49,14 @@ GoRouter crearRouter({
   return GoRouter(
     navigatorKey: navegadorRaiz,
     initialLocation: rutaInicial,
-    refreshListenable: Listenable.merge([refrescar, recuperacion]),
+    refreshListenable:
+        Listenable.merge([refrescar, recuperacion, evaluacionInicial]),
     redirect: (_, estado) => redirigirPorSesion(
       estado.matchedLocation,
       haySesion: haySesion(),
       recuperando: recuperacion?.activa ?? false,
       enlaceInvalido: recuperacion?.enlaceInvalido ?? false,
+      encuestaInicialPendiente: evaluacionInicial?.pendiente ?? false,
     ),
     routes: [
       GoRoute(
@@ -159,6 +168,26 @@ GoRouter crearRouter({
         parentNavigatorKey: navegadorRaiz,
         builder: (_, _) => const DailySurveyView(),
       ),
+      GoRoute(
+        // Avatar conversacional: la encuesta inicial hablando con la mascota.
+        // Se llega por redirect (encuesta pendiente), así que al salir se
+        // navega al Inicio en vez de hacer pop.
+        path: Rutas.avatar,
+        parentNavigatorKey: navegadorRaiz,
+        builder: (context, _) => ConversacionPagina(
+          apodo: apodo?.call(),
+          alSalir: (resultado) {
+            if (resultado == ResultadoConversacion.guardada) {
+              evaluacionInicial?.marcarCompleta();
+            } else {
+              // Formulario o cancelar: por ahora al Inicio (el formulario
+              // clásico aún no existe).
+              evaluacionInicial?.omitirPorAhora();
+            }
+            context.go(Rutas.inicio);
+          },
+        ),
+      ),
     ],
   );
 }
@@ -172,12 +201,16 @@ GoRouter crearRouter({
 /// - Sin sesión, cualquier ruta que no sea pública lleva a /login (RF-04).
 /// - Con sesión, /login lleva al Inicio (ya entró: p. ej. al verificar el
 ///   código de RF-05 o al entrar desde un celular conocido). Las demás rutas
-///   no se redirigen, para no interrumpir el flujo de registro y verificación.
+///   públicas no se redirigen, para no interrumpir el flujo de registro y
+///   verificación.
+/// - Con sesión y la encuesta inicial pendiente, /login y las rutas privadas
+///   llevan a /avatar (la mascota hace la encuesta inicial).
 String? redirigirPorSesion(
   String ubicacion, {
   required bool haySesion,
   bool recuperando = false,
   bool enlaceInvalido = false,
+  bool encuestaInicialPendiente = false,
 }) {
   if (haySesion && recuperando) {
     return ubicacion == Rutas.restablecerContrasena
@@ -189,7 +222,12 @@ String? redirigirPorSesion(
         ? null
         : Rutas.recuperarContrasena;
   }
-  if (haySesion) return ubicacion == Rutas.login ? Rutas.inicio : null;
+  if (haySesion) {
+    final destino = encuestaInicialPendiente ? Rutas.avatar : Rutas.inicio;
+    if (ubicacion == Rutas.login) return destino;
+    if (!encuestaInicialPendiente || ubicacion == Rutas.avatar) return null;
+    return Rutas.publicas.contains(ubicacion) ? null : Rutas.avatar;
+  }
   if (Rutas.publicas.contains(ubicacion)) return null;
   return Rutas.login;
 }

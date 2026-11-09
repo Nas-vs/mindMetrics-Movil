@@ -21,6 +21,9 @@ class Rutas {
   // Pantallas de profundidad: se abren encima del shell, sin barra (CA-2)
   static const encuesta = '/encuesta';
 
+  /// Evaluación inicial conversando con la mascota (avatar por voz).
+  static const avatar = '/avatar';
+
   /// Rutas a las que se puede entrar sin sesión.
   static const publicas = {
     login,

@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Avatar conversacional (Fase 4): micrófono para speech_to_text.
+         INTERNET también lo necesitan Supabase y el reconocedor de voz; las
+         plantillas de Flutter solo lo ponen en debug/profile, no en release. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="app"
         android:name="${applicationName}"
@@ -56,6 +61,18 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Avatar: Android 11+ solo deja ver estos servicios si se declaran -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
+        </intent>
+        <!-- Avatar: botón "llamar" de las líneas de ayuda en crisis -->
+        <intent>
+            <action android:name="android.intent.action.DIAL"/>
+            <data android:scheme="tel"/>
         </intent>
     </queries>
 </manifest>
