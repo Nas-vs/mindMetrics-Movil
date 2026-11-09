@@ -8,6 +8,12 @@ set search_path = public, extensions;
 
 select plan(46);
 
+-- En Supabase `postgres` NO es superusuario: para `set role motor_mindmetrics`
+-- necesita ser miembro del rol (con la opción SET de PG 16+). Lo tiene como
+-- ADMIN porque la migración creó el rol, así que puede darse la membresía.
+-- Es parte de la transacción: el rollback del final la quita.
+grant motor_mindmetrics to current_user;
+
 -- Usuarios de prueba (con los datos que exigen los triggers de RF-02 y RF-03)
 --   Ana  = 11111111-…  nació el 1995-05-05
 --   Beto = 22222222-…
