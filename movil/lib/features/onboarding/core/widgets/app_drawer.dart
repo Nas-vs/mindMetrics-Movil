@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/rutas.dart';
 import '../../../../core/tema/app_tema.dart';
 import '../../../auth/sesion/data/sesion_repositorio.dart';
 import '../constants/app_colors.dart';
@@ -98,6 +100,15 @@ class AppDrawer extends ConsumerWidget {
                     leading: const Icon(Icons.insights_rounded, color: AppColors.primaryTeal),
                     title: const Text('Estadísticas'),
                     onTap: () => Navigator.pop(context),
+                  ),
+                  // RF-22: recordatorio diario
+                  ListTile(
+                    leading: const Icon(Icons.notifications_active_rounded, color: AppColors.primaryTeal),
+                    title: const Text('Recordatorio diario'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push(Rutas.recordatorio);
+                    },
                   ),
                   const Divider(),
                   ListTile(
