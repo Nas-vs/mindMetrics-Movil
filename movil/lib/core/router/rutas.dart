@@ -27,8 +27,12 @@ class Rutas {
   /// Evaluación inicial conversando con la mascota (avatar por voz).
   static const avatar = '/avatar';
 
+  /// RF-01: carrusel de bienvenida (solo la primera vez).
+  static const bienvenida = '/bienvenida';
+
   /// Rutas a las que se puede entrar sin sesión.
   static const publicas = {
+    bienvenida,
     login,
     consentimiento,
     registro,
