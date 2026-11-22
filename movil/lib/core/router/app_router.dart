@@ -11,6 +11,8 @@ import '../../features/auth/registro/presentation/registro_pagina.dart';
 import '../../features/auth/verificacion/domain/argumentos_verificacion.dart';
 import '../../features/auth/verificacion/presentation/verificacion_pagina.dart';
 import '../../features/avatar/presentation/conversacion_pagina.dart';
+import '../../features/bienvenida/data/estado_bienvenida.dart';
+import '../../features/bienvenida/presentation/bienvenida_pagina.dart';
 import '../../features/onboarding/games/presentation/viewmodels/games_viewmodel.dart';
 import '../../features/onboarding/games/presentation/views/games_view.dart';
 import '../../features/onboarding/home/presentation/viewmodels/home_viewmodel.dart';
@@ -40,6 +42,7 @@ GoRouter crearRouter({
   Listenable? refrescar,
   EstadoRecuperacion? recuperacion,
   EstadoEvaluacionInicial? evaluacionInicial,
+  EstadoBienvenida? bienvenida,
   String? Function()? apodo,
   String rutaInicial = Rutas.inicio,
 }) {
@@ -51,15 +54,26 @@ GoRouter crearRouter({
     navigatorKey: navegadorRaiz,
     initialLocation: rutaInicial,
     refreshListenable:
-        Listenable.merge([refrescar, recuperacion, evaluacionInicial]),
+        Listenable.merge([refrescar, recuperacion, evaluacionInicial, bienvenida]),
     redirect: (_, estado) => redirigirPorSesion(
       estado.matchedLocation,
       haySesion: haySesion(),
       recuperando: recuperacion?.activa ?? false,
       enlaceInvalido: recuperacion?.enlaceInvalido ?? false,
       encuestaInicialPendiente: evaluacionInicial?.pendiente ?? false,
+      bienvenidaPendiente: bienvenida?.pendiente ?? false,
     ),
     routes: [
+      GoRoute(
+        // RF-01: al terminar o saltar, se guarda la marca y sigue a RF-02.
+        path: Rutas.bienvenida,
+        builder: (context, _) => BienvenidaPagina(
+          onTerminar: () {
+            bienvenida?.completar();
+            context.go(Rutas.consentimiento);
+          },
+        ),
+      ),
       GoRoute(
         // RF-04. `extra` opcional: aviso al llegar (ej. desde RF-05 CA-7).
         path: Rutas.login,
@@ -205,6 +219,7 @@ GoRouter crearRouter({
 ///   se permite /restablecer-contrasena.
 /// - Enlace de recuperación inválido (RF-06 CA-7): sin sesión, se muestra
 ///   /recuperar-contrasena con el aviso.
+/// - Primera vez en el celular y sin sesión (RF-01): /bienvenida.
 /// - Sin sesión, cualquier ruta que no sea pública lleva a /login (RF-04).
 /// - Con sesión, /login lleva al Inicio (ya entró: p. ej. al verificar el
 ///   código de RF-05 o al entrar desde un celular conocido). Las demás rutas
@@ -218,6 +233,7 @@ String? redirigirPorSesion(
   bool recuperando = false,
   bool enlaceInvalido = false,
   bool encuestaInicialPendiente = false,
+  bool bienvenidaPendiente = false,
 }) {
   if (haySesion && recuperando) {
     return ubicacion == Rutas.restablecerContrasena
@@ -228,6 +244,9 @@ String? redirigirPorSesion(
     return ubicacion == Rutas.recuperarContrasena
         ? null
         : Rutas.recuperarContrasena;
+  }
+  if (!haySesion && bienvenidaPendiente) {
+    return ubicacion == Rutas.bienvenida ? null : Rutas.bienvenida;
   }
   if (haySesion) {
     final destino = encuestaInicialPendiente ? Rutas.avatar : Rutas.inicio;

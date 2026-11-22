@@ -11,6 +11,7 @@ import 'core/router/app_router.dart';
 import 'core/router/estado_evaluacion_inicial.dart';
 import 'core/router/estado_recuperacion.dart';
 import 'core/router/rutas.dart';
+import 'features/bienvenida/data/estado_bienvenida.dart';
 import 'features/recordatorio/data/notificaciones_servicio.dart';
 import 'features/recordatorio/data/recordatorio_servicio.dart';
 import 'features/onboarding/core/constants/app_colors.dart';
@@ -38,6 +39,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(url: _supabaseUrl, anonKey: _anonKey);
 
+  // RF-01 CA-4: ¿ya se vio la bienvenida en este celular?
+  final bienvenida = await EstadoBienvenida.cargar();
+
   final cliente = Supabase.instance.client;
   final auth = cliente.auth;
   final router = crearRouter(
@@ -47,6 +51,7 @@ Future<void> main() async {
     recuperacion: EstadoRecuperacion(auth.onAuthStateChange),
     // Encuesta inicial pendiente → el avatar la hace al entrar.
     evaluacionInicial: EstadoEvaluacionInicial.supabase(cliente),
+    bienvenida: bienvenida,
     // RF-07: el nickname viaja en la sesión (app_metadata), sin consulta.
     apodo: () => auth.currentUser?.appMetadata['nickname'] as String?,
   );
