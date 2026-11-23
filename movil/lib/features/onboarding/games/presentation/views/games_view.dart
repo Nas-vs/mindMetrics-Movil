@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'jardin_screen.dart';
 import '../viewmodels/ejecucion_juego_viewmodel.dart';
 import 'ejecucion_juego_screen.dart';
 import '../../../core/widgets/hamburger_button.dart';
@@ -88,14 +89,24 @@ class GamesView extends StatelessWidget {
                     return _TarjetaJuego(
                       juego: juego,
                       onTap: () {
-                        Navigator.of(context, rootNavigator: true).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => EjecucionJuegoScreen(
-                              viewModel: EjecucionJuegoViewModel(juego: juego),
-                              onSesionGuardada: viewModel.guardarSesion,
+                        if (juego.id == 'jardin_emocional') {
+                          Navigator.of(context, rootNavigator: true).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const JardinScreen(),
                             ),
-                          ),
-                        );
+                          );
+                        } else {
+                          Navigator.of(context, rootNavigator: true).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => EjecucionJuegoScreen(
+                                viewModel: EjecucionJuegoViewModel(
+                                  juego: juego,
+                                ),
+                                onSesionGuardada: viewModel.guardarSesion,
+                              ),
+                            ),
+                          );
+                        }
                       },
                     );
                   },
