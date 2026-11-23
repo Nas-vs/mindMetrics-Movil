@@ -19,7 +19,11 @@ class Rutas {
   static const perfil = '/perfil';
 
   // Pantallas de profundidad: se abren encima del shell, sin barra (CA-2)
+  /// RF-08: registro rápido de ánimo (botón + y notificación de RF-22).
   static const encuesta = '/encuesta';
+
+  /// RF-11: calendario emocional mensual.
+  static const calendario = '/calendario';
 
   /// RF-22: configuración del recordatorio diario.
   static const recordatorio = '/recordatorio';

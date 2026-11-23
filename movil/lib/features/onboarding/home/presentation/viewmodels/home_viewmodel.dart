@@ -3,32 +3,47 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../animo/data/registro_animo_repositorio.dart';
 import '../../data/models/home_summary_model.dart';
 import '../../data/repositories/home_repository.dart';
 
-/// ViewModel principal de la vista Home (MVVM).
-/// Gestiona el estado reactivo de la pantalla sin acoplar la UI a los datos.
+/// ViewModel del Inicio (MVVM).
+///
+/// Recarga el resumen cuando:
+/// - cambia la sesión (RF-07: el nickname viene del token),
+/// - se guarda el ánimo del día ([animoGuardado], RF-08),
+/// - la app vuelve a primer plano (el motor pudo terminar de calcular),
+/// - el usuario desliza hacia abajo (RefreshIndicator).
 class HomeViewModel extends ChangeNotifier {
+  HomeViewModel({
+    HomeRepository? repository,
+    DateTime Function()? ahora,
+    Listenable? recargarCuando,
+  })  : _repository = repository ?? HomeRepositorySupabase(),
+        _ahora = ahora ?? DateTime.now,
+        _recargarCuando = recargarCuando ?? animoGuardado {
+    _recargarCuando.addListener(loadSummary);
+    _ciclo = AppLifecycleListener(onResume: loadSummary);
+    _escucharCambiosDeSesion();
+    loadSummary();
+  }
+
   final HomeRepository _repository;
   final DateTime Function() _ahora;
+  final Listenable _recargarCuando;
+  late final AppLifecycleListener _ciclo;
   StreamSubscription<AuthState>? _authSub;
+  bool _destruido = false;
+  int _peticion = 0;
 
   HomeSummaryModel _summary = HomeSummaryModel.initial();
   bool _isLoading = false;
+  bool _cargoUnaVez = false;
   String? _errorMessage;
-
-  HomeViewModel({HomeRepository? repository, DateTime Function()? ahora})
-    : _repository = repository ?? MockHomeRepository(),
-      _ahora = ahora ?? DateTime.now {
-    loadSummary();
-    _escucharCambiosDeSesion();
-  }
 
   void _escucharCambiosDeSesion() {
     try {
-      _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((_) {
-        loadSummary();
-      });
+      _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((_) => loadSummary());
     } catch (_) {
       // En pruebas sin Supabase inicializado no se suscribe al stream.
     }
@@ -37,83 +52,86 @@ class HomeViewModel extends ChangeNotifier {
   // Getters
   HomeSummaryModel get summary => _summary;
   bool get isLoading => _isLoading;
+
+  /// true mientras se hace la PRIMERA carga (las siguientes no parpadean).
+  bool get cargandoPrimeraVez => _isLoading && !_cargoUnaVez;
   String? get errorMessage => _errorMessage;
 
   String get username => _summary.username;
-  String get estadoHoy => _summary.estadoHoy;
-  String get registroEstimado => _summary.registroEstimado;
-  String get rachaDias => _summary.rachaDias;
-  String get rachaTexto => _summary.rachaTexto;
 
-  /// RF-07 CA-3: Fecha actual en formato largo, ej. "sábado, 26 de septiembre".
+  /// "🙂 Bien" o "Sin registrar".
+  String get estadoHoy {
+    if (cargandoPrimeraVez) return '…';
+    final n = _summary.nivelHoy;
+    return n == null ? 'Sin registrar' : '${n.emoji} ${n.etiqueta}';
+  }
+
+  ResultadoEvaluacion get evaluacion => _summary.evaluacion;
+
+  String get resultadoEvaluacion =>
+      cargandoPrimeraVez ? '…' : _summary.evaluacion.textoCorto;
+
+  String get racha {
+    if (cargandoPrimeraVez) return '…';
+    final r = _summary.racha;
+    return r == 1 ? '1 DÍA' : '$r DÍAS';
+  }
+
+  List<DiaSemana> get semana => _summary.semana;
+
+  String get tituloSemana => HomeSummaryModel.tituloSemana(_summary.semana, _ahora());
+
+  DateTime get hoy => _ahora();
+
+  /// RF-07 CA-3: fecha actual en formato largo, ej. "sábado, 26 de septiembre".
   String get fechaActual => formatearFechaLarga(_ahora());
 
   static const _diasSemana = [
-    'lunes',
-    'martes',
-    'miércoles',
-    'jueves',
-    'viernes',
-    'sábado',
-    'domingo',
+    'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo',
   ];
 
   static const _meses = [
-    'enero',
-    'febrero',
-    'marzo',
-    'abril',
-    'mayo',
-    'junio',
-    'julio',
-    'agosto',
-    'septiembre',
-    'octubre',
-    'noviembre',
-    'diciembre',
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
   ];
 
-  /// Formatea [fecha] como "<día de semana>, <día> de <mes>".
+  /// Formatea [fecha] como `<día de semana>, <día> de <mes>`.
   static String formatearFechaLarga(DateTime fecha) {
     final diaSemana = _diasSemana[fecha.weekday - 1];
     final mes = _meses[fecha.month - 1];
     return '$diaSemana, ${fecha.day} de $mes';
   }
 
-  /// Carga las métricas del usuario.
+  /// Carga las métricas del usuario. Si llegan dos recargas seguidas, solo
+  /// se aplica la respuesta de la última.
   Future<void> loadSummary() async {
+    final id = ++_peticion;
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    _avisar();
 
     try {
-      _summary = await _repository.getHomeSummary();
+      final resumen = await _repository.getHomeSummary();
+      if (id != _peticion) return;
+      _summary = resumen;
     } catch (e) {
+      if (id != _peticion) return;
       _errorMessage = 'Error al cargar los datos: $e';
-    } finally {
-      _isLoading = false;
-      notifyListeners();
     }
+    _isLoading = false;
+    _cargoUnaVez = true;
+    _avisar();
   }
 
-  /// Permite actualizar variables dinámicamente cuando el usuario complete una encuesta o juego.
-  void updateMetrics({
-    String? estadoHoy,
-    String? registroEstimado,
-    String? rachaDias,
-    String? rachaTexto,
-  }) {
-    _summary = _summary.copyWith(
-      estadoHoy: estadoHoy,
-      registroEstimado: registroEstimado,
-      rachaDias: rachaDias,
-      rachaTexto: rachaTexto,
-    );
-    notifyListeners();
+  void _avisar() {
+    if (!_destruido) notifyListeners();
   }
 
   @override
   void dispose() {
+    _destruido = true;
+    _recargarCuando.removeListener(loadSummary);
+    _ciclo.dispose();
     _authSub?.cancel();
     super.dispose();
   }

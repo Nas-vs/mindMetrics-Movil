@@ -15,7 +15,9 @@ import 'package:app_bienestar/features/onboarding/games/presentation/views/games
 import 'package:app_bienestar/features/onboarding/home/presentation/views/home_view.dart';
 import 'package:app_bienestar/features/onboarding/profile/presentation/views/profile_view.dart';
 import 'package:app_bienestar/features/onboarding/shell/presentation/widgets/floating_nav_bar.dart';
-import 'package:app_bienestar/features/onboarding/survey/presentation/views/daily_survey_view.dart';
+import 'package:app_bienestar/features/animo/data/registro_animo_repositorio.dart';
+import 'package:app_bienestar/features/animo/presentation/registro_animo_pagina.dart';
+import '../../features/animo/fakes_animo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -41,6 +43,9 @@ Future<GoRouter> montarApp(
   );
   await tester.pumpWidget(
     ProviderScope(
+      overrides: [
+        registroAnimoRepositorioProvider.overrideWithValue(RepositorioAnimoFalso()),
+      ],
       child: MaterialApp.router(
         routerConfig: router,
         // La fuente de pruebas de Flutter dibuja cada letra como un cuadrado
@@ -122,13 +127,13 @@ void main() {
       // se verifica la pantalla visible y no la ubicación.
       await tester.tap(find.byIcon(Icons.add_rounded));
       await tester.pumpAndSettle();
-      expect(find.byType(DailySurveyView), findsOneWidget);
+      expect(find.byType(RegistroAnimoPagina), findsOneWidget);
       expect(barra, findsNothing);
 
-      // Flecha de regreso de la encuesta
+      // Flecha de regreso de RF-08 (FondoMindMetrics)
       await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
       await tester.pumpAndSettle();
-      expect(find.byType(DailySurveyView), findsNothing);
+      expect(find.byType(RegistroAnimoPagina), findsNothing);
       expect(find.byType(HomeView), findsOneWidget);
       expect(ubicacion(router), Rutas.inicio);
       expect(barra, findsOneWidget);
