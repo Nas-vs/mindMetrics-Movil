@@ -10,9 +10,11 @@ import '../../features/auth/recuperar_contrasena/presentation/restablecer_contra
 import '../../features/auth/registro/presentation/registro_pagina.dart';
 import '../../features/auth/verificacion/domain/argumentos_verificacion.dart';
 import '../../features/auth/verificacion/presentation/verificacion_pagina.dart';
+import '../../features/animo/presentation/registro_animo_pagina.dart';
 import '../../features/avatar/presentation/conversacion_pagina.dart';
 import '../../features/bienvenida/data/estado_bienvenida.dart';
 import '../../features/bienvenida/presentation/bienvenida_pagina.dart';
+import '../../features/calendario/calendario_emocional.dart';
 import '../../features/onboarding/games/presentation/viewmodels/games_viewmodel.dart';
 import '../../features/onboarding/games/presentation/views/games_view.dart';
 import '../../features/onboarding/home/presentation/viewmodels/home_viewmodel.dart';
@@ -20,7 +22,6 @@ import '../../features/onboarding/home/presentation/views/home_view.dart';
 import '../../features/onboarding/profile/presentation/viewmodels/profile_viewmodel.dart';
 import '../../features/onboarding/profile/presentation/views/profile_view.dart';
 import '../../features/onboarding/shell/presentation/views/main_shell_view.dart';
-import '../../features/onboarding/survey/presentation/views/daily_survey_view.dart';
 import '../../features/recordatorio/presentation/recordatorio_pagina.dart';
 import '../widgets/con_view_model.dart';
 import 'estado_evaluacion_inicial.dart';
@@ -181,7 +182,13 @@ GoRouter crearRouter({
       GoRoute(
         path: Rutas.encuesta,
         parentNavigatorKey: navegadorRaiz,
-        builder: (_, _) => const DailySurveyView(),
+        builder: (_, _) => const RegistroAnimoPagina(), // RF-08
+      ),
+      GoRoute(
+        // RF-11: calendario emocional del mes.
+        path: Rutas.calendario,
+        parentNavigatorKey: navegadorRaiz,
+        builder: (_, _) => const CalendarioPagina(),
       ),
       GoRoute(
         // RF-22: activar el recordatorio diario y elegir la hora.
