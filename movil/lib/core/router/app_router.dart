@@ -3,12 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/consentimiento/presentation/consentimiento_pagina.dart';
 import '../../features/auth/inicio_sesion/presentation/inicio_sesion_pagina.dart';
 import '../../features/auth/recuperar_contrasena/presentation/recuperar_contrasena_pagina.dart';
 import '../../features/auth/recuperar_contrasena/presentation/restablecer_contrasena_pagina.dart';
 import '../../features/auth/registro/presentation/registro_pagina.dart';
 import '../../features/auth/verificacion/domain/argumentos_verificacion.dart';
 import '../../features/auth/verificacion/presentation/verificacion_pagina.dart';
+import '../../features/avatar/presentation/conversacion_pagina.dart';
+import '../../features/bienvenida/data/estado_bienvenida.dart';
+import '../../features/bienvenida/presentation/bienvenida_pagina.dart';
 import '../../features/onboarding/games/presentation/viewmodels/games_viewmodel.dart';
 import '../../features/onboarding/games/presentation/views/games_view.dart';
 import '../../features/onboarding/home/presentation/viewmodels/home_viewmodel.dart';
@@ -17,7 +21,9 @@ import '../../features/onboarding/profile/presentation/viewmodels/profile_viewmo
 import '../../features/onboarding/profile/presentation/views/profile_view.dart';
 import '../../features/onboarding/shell/presentation/views/main_shell_view.dart';
 import '../../features/onboarding/survey/presentation/views/daily_survey_view.dart';
+import '../../features/recordatorio/presentation/recordatorio_pagina.dart';
 import '../widgets/con_view_model.dart';
+import 'estado_evaluacion_inicial.dart';
 import 'estado_recuperacion.dart';
 import 'rutas.dart';
 
@@ -28,10 +34,16 @@ import 'rutas.dart';
 /// (ej. al cerrar sesión se envía al usuario a /login).
 /// [recuperacion] lleva el estado del enlace de recuperación (RF-06); es
 /// opcional para que las pruebas que no lo usan sigan igual.
+/// [evaluacionInicial] lleva al avatar a quien no ha hecho la encuesta
+/// inicial; [apodo] es el nickname con el que lo saluda (RF-07). Ambos son
+/// opcionales por la misma razón.
 GoRouter crearRouter({
   required bool Function() haySesion,
   Listenable? refrescar,
   EstadoRecuperacion? recuperacion,
+  EstadoEvaluacionInicial? evaluacionInicial,
+  EstadoBienvenida? bienvenida,
+  String? Function()? apodo,
   String rutaInicial = Rutas.inicio,
 }) {
   // Navigator raíz: las pantallas de profundidad se apilan aquí, ENCIMA del
@@ -41,19 +53,34 @@ GoRouter crearRouter({
   return GoRouter(
     navigatorKey: navegadorRaiz,
     initialLocation: rutaInicial,
-    refreshListenable: Listenable.merge([refrescar, recuperacion]),
+    refreshListenable:
+        Listenable.merge([refrescar, recuperacion, evaluacionInicial, bienvenida]),
     redirect: (_, estado) => redirigirPorSesion(
       estado.matchedLocation,
       haySesion: haySesion(),
       recuperando: recuperacion?.activa ?? false,
       enlaceInvalido: recuperacion?.enlaceInvalido ?? false,
+      encuestaInicialPendiente: evaluacionInicial?.pendiente ?? false,
+      bienvenidaPendiente: bienvenida?.pendiente ?? false,
     ),
     routes: [
+      GoRoute(
+        // RF-01: al terminar o saltar, se guarda la marca y sigue a RF-02.
+        path: Rutas.bienvenida,
+        builder: (context, _) => BienvenidaPagina(
+          onTerminar: () {
+            bienvenida?.completar();
+            context.go(Rutas.consentimiento);
+          },
+        ),
+      ),
       GoRoute(
         // RF-04. `extra` opcional: aviso al llegar (ej. desde RF-05 CA-7).
         path: Rutas.login,
         builder: (context, estado) => InicioSesionPagina(
-          mensajeInicial: estado.extra is String ? estado.extra! as String : null,
+          mensajeInicial: estado.extra is String
+              ? estado.extra! as String
+              : null,
           onOlvidoContrasena: () => context.go(Rutas.recuperarContrasena),
         ),
       ),
@@ -73,10 +100,20 @@ GoRouter crearRouter({
         builder: (_, _) => const RestablecerContrasenaPagina(),
       ),
       GoRoute(
+        // RF-02: consentimiento informado antes de crear la cuenta.
+        path: Rutas.consentimiento,
+        builder: (context, _) =>
+            ConsentimientoPagina(onVolver: () => context.go(Rutas.login)),
+      ),
+      GoRoute(
         path: Rutas.registro,
-        // '1.0' = política vigente insertada por la migración RF-02.
-        builder: (context, _) => RegistroPagina(
-          versionPolitica: '1.0',
+        redirect: (_, estado) {
+          final version = estado.extra;
+          if (version is String && version.isNotEmpty) return null;
+          return Rutas.consentimiento;
+        },
+        builder: (context, estado) => RegistroPagina(
+          versionPolitica: estado.extra! as String,
           onIniciarSesion: () => context.go(Rutas.login),
         ),
       ),
@@ -146,6 +183,32 @@ GoRouter crearRouter({
         parentNavigatorKey: navegadorRaiz,
         builder: (_, _) => const DailySurveyView(),
       ),
+      GoRoute(
+        // RF-22: activar el recordatorio diario y elegir la hora.
+        path: Rutas.recordatorio,
+        parentNavigatorKey: navegadorRaiz,
+        builder: (_, _) => const RecordatorioPagina(),
+      ),
+      GoRoute(
+        // Avatar conversacional: la encuesta inicial hablando con la mascota.
+        // Se llega por redirect (encuesta pendiente), así que al salir se
+        // navega al Inicio en vez de hacer pop.
+        path: Rutas.avatar,
+        parentNavigatorKey: navegadorRaiz,
+        builder: (context, _) => ConversacionPagina(
+          apodo: apodo?.call(),
+          alSalir: (resultado) {
+            if (resultado == ResultadoConversacion.guardada) {
+              evaluacionInicial?.marcarCompleta();
+            } else {
+              // Formulario o cancelar: por ahora al Inicio (el formulario
+              // clásico aún no existe).
+              evaluacionInicial?.omitirPorAhora();
+            }
+            context.go(Rutas.inicio);
+          },
+        ),
+      ),
     ],
   );
 }
@@ -156,15 +219,21 @@ GoRouter crearRouter({
 ///   se permite /restablecer-contrasena.
 /// - Enlace de recuperación inválido (RF-06 CA-7): sin sesión, se muestra
 ///   /recuperar-contrasena con el aviso.
+/// - Primera vez en el celular y sin sesión (RF-01): /bienvenida.
 /// - Sin sesión, cualquier ruta que no sea pública lleva a /login (RF-04).
 /// - Con sesión, /login lleva al Inicio (ya entró: p. ej. al verificar el
 ///   código de RF-05 o al entrar desde un celular conocido). Las demás rutas
-///   no se redirigen, para no interrumpir el flujo de registro y verificación.
+///   públicas no se redirigen, para no interrumpir el flujo de registro y
+///   verificación.
+/// - Con sesión y la encuesta inicial pendiente, /login y las rutas privadas
+///   llevan a /avatar (la mascota hace la encuesta inicial).
 String? redirigirPorSesion(
   String ubicacion, {
   required bool haySesion,
   bool recuperando = false,
   bool enlaceInvalido = false,
+  bool encuestaInicialPendiente = false,
+  bool bienvenidaPendiente = false,
 }) {
   if (haySesion && recuperando) {
     return ubicacion == Rutas.restablecerContrasena
@@ -176,7 +245,15 @@ String? redirigirPorSesion(
         ? null
         : Rutas.recuperarContrasena;
   }
-  if (haySesion) return ubicacion == Rutas.login ? Rutas.inicio : null;
+  if (!haySesion && bienvenidaPendiente) {
+    return ubicacion == Rutas.bienvenida ? null : Rutas.bienvenida;
+  }
+  if (haySesion) {
+    final destino = encuestaInicialPendiente ? Rutas.avatar : Rutas.inicio;
+    if (ubicacion == Rutas.login) return destino;
+    if (!encuestaInicialPendiente || ubicacion == Rutas.avatar) return null;
+    return Rutas.publicas.contains(ubicacion) ? null : Rutas.avatar;
+  }
   if (Rutas.publicas.contains(ubicacion)) return null;
   return Rutas.login;
 }
@@ -201,3 +278,5 @@ class RefrescoPorStream extends ChangeNotifier {
     super.dispose();
   }
 }
+
+//test

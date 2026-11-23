@@ -5,6 +5,7 @@ class Rutas {
 
   // Sin sesión
   static const login = '/login';
+  static const consentimiento = '/consentimiento';
   static const registro = '/registro';
   static const verificacion = '/verificacion';
   static const recuperarContrasena = '/recuperar-contrasena';
@@ -20,11 +21,24 @@ class Rutas {
   // Pantallas de profundidad: se abren encima del shell, sin barra (CA-2)
   static const encuesta = '/encuesta';
 
+  /// RF-22: configuración del recordatorio diario.
+  static const recordatorio = '/recordatorio';
+
+  /// Evaluación inicial conversando con la mascota (avatar por voz).
+  static const avatar = '/avatar';
+
+  /// RF-01: carrusel de bienvenida (solo la primera vez).
+  static const bienvenida = '/bienvenida';
+
   /// Rutas a las que se puede entrar sin sesión.
   static const publicas = {
+    bienvenida,
     login,
+    consentimiento,
     registro,
     verificacion,
     recuperarContrasena,
   };
 }
+
+//test

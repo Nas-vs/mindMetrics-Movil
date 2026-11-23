@@ -1,0 +1,181 @@
+{
+  "id": "encuesta_inicial",
+  "version": "1.0",
+  "idioma": "es-CO",
+  "nota": "Guion PROVISIONAL: son las preguntas de la evaluación inicial de la web dichas en voz. Validarlo con el psicólogo del equipo. Es un tamizaje, no un diagnóstico.",
+  "umbral_confirmacion": 0.8,
+  "intentos_antes_de_opciones": 2,
+
+  "bienvenida": {
+    "texto": "¡Hola, {apodo}! Soy {mascota}. Te voy a hacer unas preguntas cortas para conocerte mejor. Responde con tus palabras; si no te entiendo, te pregunto otra vez. Puedes decir «repetir» o «prefiero el formulario» cuando quieras.",
+    "emocion": "alegre"
+  },
+  "despedida": {
+    "texto": "¡Listo, {apodo}, terminamos! Gracias por contarme todo esto. En un momento verás tu resultado.",
+    "emocion": "alegre"
+  },
+  "mensajes": {
+    "no_entendi": "Perdón, no te entendí. {pregunta}",
+    "fuera_de_rango": "Mmm, eso no me cuadra: tiene que estar entre {min} y {max}. {pregunta}",
+    "confirmar": "Entendí {respuesta}. ¿Es correcto?",
+    "confirmado": "Perfecto.",
+    "corregir": "Está bien, dime otra vez.",
+    "usar_opciones": "Te dejo las opciones en pantalla para que toques la tuya. {pregunta}",
+    "formulario": "Claro, te llevo al formulario. Lo que ya respondiste se queda guardado.",
+    "continuar_tras_crisis": "Gracias por decírmelo. Seguimos donde íbamos. {pregunta}"
+  },
+
+  "crisis": {
+    "nota": "Detección por frases: puede fallar en ambos sentidos. Ante la duda, se muestra la ayuda. Lista a revisar con el psicólogo del equipo.",
+    "frases": [
+      "quiero morir", "me quiero morir", "quisiera morir", "quiero morirme", "ganas de morir",
+      "no quiero vivir", "no quiero seguir viviendo", "no vale la pena vivir", "mejor estar muerto", "mejor estar muerta",
+      "matarme", "me voy a matar", "quitarme la vida", "acabar con mi vida", "acabar con todo",
+      "suicidio", "suicidarme", "suicida",
+      "hacerme dano", "lastimarme", "cortarme", "desaparecer para siempre"
+    ],
+    "texto": "Lo que me cuentas es muy importante y no tienes que pasarlo solo. Ahora mismo puedes hablar gratis con alguien que te escucha: en Cali, la Línea 106, las 24 horas; en todo el país, la Línea 192 opción 4; y si estás en peligro inmediato, el 123. Si lo dijiste en otro sentido y quieres seguir, dime «sigamos».",
+    "emocion": "empatico",
+    "continuar": ["sigamos", "seguir", "continuar", "continuemos", "estoy bien", "fue un decir", "era un decir"],
+    "lineas": [
+      { "nombre": "Línea 106 · Cali", "numero": "106", "horario": "24 horas, todos los días" },
+      { "nombre": "Línea 192 opción 4 · Ministerio de Salud", "numero": "192", "horario": "Nacional, gratuita" },
+      { "nombre": "Emergencias", "numero": "123", "horario": "24 horas" }
+    ],
+    "verificado": "2026-11-08"
+  },
+
+  "comandos": {
+    "repetir": ["repetir", "repite", "otra vez", "no entendí", "cómo dijiste", "qué dijiste"],
+    "formulario": ["prefiero el formulario", "formulario", "prefiero escribir", "quiero escribir"]
+  },
+
+  "preguntas": [
+    {
+      "campo": "genero", "tipo": "opcion", "emocion": "neutral",
+      "texto": "Para empezar, ¿con qué género te identificas?",
+      "opciones": [
+        { "valor": "femenino", "etiqueta": "Femenino", "sinonimos": ["femenino", "femenina", "mujer", "chica", "senora"] },
+        { "valor": "masculino", "etiqueta": "Masculino", "sinonimos": ["masculino", "hombre", "chico", "varon", "senor"] },
+        { "valor": "no_binario", "etiqueta": "No binario", "sinonimos": ["no binario", "no binaria", "no binarie", "nobinario"] },
+        { "valor": "otro", "etiqueta": "Otro / prefiero no decirlo", "sinonimos": ["otro", "otra", "prefiero no decir", "prefiero no decirlo", "no quiero decir"] }
+      ]
+    },
+    {
+      "campo": "estado_relacion", "tipo": "opcion", "emocion": "neutral",
+      "texto": "¿Cuál es tu situación sentimental: soltero, en noviazgo, en unión libre, casado…?",
+      "opciones": [
+        { "valor": "soltero", "etiqueta": "Soltero/a", "sinonimos": ["soltero", "soltera", "solo", "sola", "sin pareja"] },
+        { "valor": "noviazgo", "etiqueta": "Noviazgo", "sinonimos": ["noviazgo", "novio", "novia", "de novios", "saliendo con alguien"] },
+        { "valor": "union libre", "etiqueta": "Unión libre", "sinonimos": ["union libre", "vivo con mi pareja", "convivo", "vivimos juntos", "vivimos juntas", "arrejuntado", "arrejuntada"] },
+        { "valor": "casado", "etiqueta": "Casado/a", "sinonimos": ["casado", "casada", "esposo", "esposa", "matrimonio"] },
+        { "valor": "poliamor", "etiqueta": "Poliamor", "sinonimos": ["poliamor", "poliamorosa", "poliamoroso", "relacion abierta"] },
+        { "valor": "divorciado", "etiqueta": "Divorciado/a o separado/a", "sinonimos": ["divorciado", "divorciada", "separado", "separada"] },
+        { "valor": "viudo", "etiqueta": "Viudo/a", "sinonimos": ["viudo", "viuda"] }
+      ]
+    },
+    {
+      "campo": "situacion_trabajo", "tipo": "opcion", "emocion": "neutral",
+      "texto": "¿A qué te dedicas ahora? Por ejemplo: estudias, trabajas tiempo completo, medio tiempo, por tu cuenta…",
+      "opciones": [
+        { "valor": "estudiante", "etiqueta": "Estudiante", "sinonimos": ["estudiante", "estudio", "estudiando", "universidad", "colegio", "carrera"] },
+        { "valor": "empleado tiempo completo", "etiqueta": "Empleado tiempo completo", "sinonimos": ["tiempo completo", "jornada completa", "empleado", "empleada", "trabajo en una empresa"] },
+        { "valor": "empleado medio tiempo", "etiqueta": "Empleado medio tiempo", "sinonimos": ["medio tiempo", "media jornada", "tiempo parcial", "part time"] },
+        { "valor": "independiente", "etiqueta": "Independiente", "sinonimos": ["independiente", "por mi cuenta", "freelance", "emprendedor", "emprendedora", "negocio propio", "informal"] },
+        { "valor": "contrato temporal", "etiqueta": "Contrato temporal", "sinonimos": ["contrato temporal", "temporal", "por prestacion de servicios", "por obra"] },
+        { "valor": "desempleado", "etiqueta": "Sin empleo", "sinonimos": ["desempleado", "desempleada", "sin trabajo", "sin empleo", "buscando trabajo", "no trabajo", "cesante"] },
+        { "valor": "pensionado", "etiqueta": "Pensionado/a", "sinonimos": ["pensionado", "pensionada", "jubilado", "jubilada"] }
+      ]
+    },
+    {
+      "campo": "hr_sueno", "tipo": "numero", "emocion": "neutral", "min": 0, "max": 24,
+      "periodo": "dia", "unidad": "horas por noche",
+      "texto": "Hablemos de tu rutina. En una noche normal, ¿cuántas horas duermes?"
+    },
+    {
+      "campo": "hr_trabajo", "tipo": "numero", "emocion": "neutral", "min": 0, "max": 168,
+      "periodo": "semana", "dias_por_semana": 5, "unidad": "horas a la semana",
+      "texto": "¿Cuántas horas a la semana trabajas o estudias, más o menos? Si te queda más fácil, dime cuántas al día."
+    },
+    {
+      "campo": "hr_pantalla", "tipo": "numero", "emocion": "neutral", "min": 0, "max": 24,
+      "periodo": "dia", "unidad": "horas al día",
+      "texto": "Sin contar el trabajo o el estudio, ¿cuántas horas al día pasas frente a pantallas: celular, televisión, juegos?"
+    },
+    {
+      "campo": "hr_act_fis", "tipo": "numero", "emocion": "neutral", "min": 0, "max": 168,
+      "periodo": "semana", "dias_por_semana": 7, "unidad": "horas a la semana",
+      "texto": "¿Y cuántas horas a la semana haces actividad física, como caminar rápido, deporte o ir al gimnasio?"
+    },
+    {
+      "campo": "estres_laboral", "tipo": "escala", "emocion": "neutral", "min": 1, "max": 10,
+      "texto": "Ahora del uno al diez, donde uno es nada y diez es muchísimo: ¿cuánto estrés te genera tu trabajo u ocupación principal?"
+    },
+    {
+      "campo": "estres_academico", "tipo": "escala", "emocion": "neutral", "min": 1, "max": 10,
+      "texto": "Del uno al diez, ¿cuánto estrés te generan los estudios? Si no estudias, dime uno."
+    },
+    {
+      "campo": "estres_financ", "tipo": "escala", "emocion": "neutral", "min": 1, "max": 10,
+      "texto": "Del uno al diez, ¿cuánto estrés te genera el dinero o tus finanzas?"
+    },
+    {
+      "campo": "satisfaccion_laboral", "tipo": "escala", "emocion": "neutral", "min": 1, "max": 10,
+      "texto": "Del uno al diez, ¿qué tan satisfecho o satisfecha te sientes con lo que haces día a día?"
+    },
+    {
+      "campo": "cambio_emocional", "tipo": "escala", "emocion": "empatico", "min": 1, "max": 10,
+      "texto": "Del uno al diez, ¿qué tanto cambia tu estado de ánimo de un momento a otro sin una razón clara?"
+    },
+    {
+      "campo": "dificultad_concentra", "tipo": "opcion", "emocion": "neutral",
+      "texto": "¿Te cuesta concentrarte? ¿Nunca, a veces o con frecuencia?",
+      "opciones": [
+        { "valor": "ninguno", "etiqueta": "Nunca", "sinonimos": ["nunca", "no", "para nada", "ninguna", "no me cuesta", "casi nunca", "nada"] },
+        { "valor": "ocasional", "etiqueta": "A veces", "sinonimos": ["a veces", "de vez en cuando", "ocasional", "algunas veces", "un poco", "mas o menos", "regular"] },
+        { "valor": "frecuente", "etiqueta": "Con frecuencia", "sinonimos": ["frecuente", "con frecuencia", "frecuentemente", "siempre", "casi siempre", "mucho", "todo el tiempo", "seguido"] }
+      ]
+    },
+    {
+      "campo": "_transicion", "tipo": "mensaje", "emocion": "empatico",
+      "texto": "Ahora vienen unas preguntas más personales. Tómate tu tiempo; lo que me digas es confidencial."
+    },
+    {
+      "campo": "apoyo_percibido", "tipo": "opcion", "emocion": "empatico",
+      "texto": "Cuando tienes un problema, ¿qué tanto apoyo sientes de las personas cercanas: excelente, alto, moderado, intermitente, poco o nada?",
+      "opciones": [
+        { "valor": "excelente", "etiqueta": "Excelente", "sinonimos": ["excelente", "muchisimo", "siempre estan", "total"] },
+        { "valor": "alto", "etiqueta": "Alto", "sinonimos": ["alto", "mucho", "bastante", "harto", "buen apoyo"] },
+        { "valor": "moderado", "etiqueta": "Moderado", "sinonimos": ["moderado", "regular", "normal", "mas o menos"] },
+        { "valor": "intermitente", "etiqueta": "A veces sí, a veces no", "sinonimos": ["intermitente", "a veces", "depende", "de vez en cuando"] },
+        { "valor": "poco", "etiqueta": "Poco", "sinonimos": ["poco", "poquito", "muy poco", "casi nada"] },
+        { "valor": "nulo", "etiqueta": "Ninguno", "sinonimos": ["nulo", "nada", "ninguno", "nadie", "estoy solo", "estoy sola", "sin apoyo"] }
+      ]
+    },
+    {
+      "campo": "historial_panico", "tipo": "si_no", "emocion": "empatico",
+      "texto": "¿Alguna vez has tenido un ataque de pánico o una crisis de ansiedad muy fuerte?"
+    },
+    {
+      "campo": "historial_familiar", "tipo": "si_no", "emocion": "empatico",
+      "texto": "¿En tu familia alguien ha tenido problemas de salud mental, como depresión o ansiedad?"
+    },
+    {
+      "campo": "diagnostico_previo", "tipo": "si_no", "emocion": "empatico",
+      "texto": "¿Algún profesional te ha dado un diagnóstico de salud mental?"
+    },
+    {
+      "campo": "tratamiento_previo", "tipo": "opcion", "emocion": "empatico",
+      "texto": "¿Has tenido tratamiento psicológico o psiquiátrico? Puedes decirme: nunca, sí y sigo en él, o lo dejé.",
+      "opciones": [
+        { "valor": "ninguno", "etiqueta": "Nunca", "sinonimos": ["nunca", "no", "ninguno", "jamas"] },
+        { "valor": "adherente", "etiqueta": "Sí, y sigo en tratamiento", "sinonimos": ["sigo", "estoy en tratamiento", "actualmente", "voy al psicologo", "voy a terapia", "en terapia", "si y sigo", "todavia voy"] },
+        { "valor": "abandono", "etiqueta": "Sí, pero lo dejé", "sinonimos": ["lo deje", "lo abandone", "abandone", "deje de ir", "ya no voy", "lo suspendi", "si pero lo deje"] }
+      ]
+    },
+    {
+      "campo": "uso_sustancias", "tipo": "si_no", "emocion": "empatico",
+      "texto": "Última pregunta: ¿consumes alguna sustancia psicoactiva, como marihuana u otras drogas? Recuerda que esto es confidencial."
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -7,7 +8,12 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/router/app_router.dart';
+import 'core/router/estado_evaluacion_inicial.dart';
 import 'core/router/estado_recuperacion.dart';
+import 'core/router/rutas.dart';
+import 'features/bienvenida/data/estado_bienvenida.dart';
+import 'features/recordatorio/data/notificaciones_servicio.dart';
+import 'features/recordatorio/data/recordatorio_servicio.dart';
 import 'features/onboarding/core/constants/app_colors.dart';
 
 /// Supabase local (`supabase start`). El emulador de Android ve el host en
@@ -33,15 +39,51 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(url: _supabaseUrl, anonKey: _anonKey);
 
-  final auth = Supabase.instance.client.auth;
+  // RF-01 CA-4: ¿ya se vio la bienvenida en este celular?
+  final bienvenida = await EstadoBienvenida.cargar();
+
+  final cliente = Supabase.instance.client;
+  final auth = cliente.auth;
   final router = crearRouter(
     haySesion: () => auth.currentSession != null,
     refrescar: RefrescoPorStream(auth.onAuthStateChange),
     // RF-06: enlace de recuperación de contraseña (mindmetrics://...).
     recuperacion: EstadoRecuperacion(auth.onAuthStateChange),
+    // Encuesta inicial pendiente → el avatar la hace al entrar.
+    evaluacionInicial: EstadoEvaluacionInicial.supabase(cliente),
+    bienvenida: bienvenida,
+    // RF-07: el nickname viaja en la sesión (app_metadata), sin consulta.
+    apodo: () => auth.currentUser?.appMetadata['nickname'] as String?,
   );
 
-  runApp(ProviderScope(child: MyApp(router: router)));
+  // RF-22: recordatorio diario. Tocar la notificación abre el registro de
+  // ánimo (CA-4), con la app abierta o cerrada.
+  final notificaciones = NotificacionesLocales();
+  final abrioDesdeNotificacion = await notificaciones.inicializar(
+    alTocar: () => router.push(Rutas.encuesta),
+  );
+  final recordatorio = RecordatorioServicio.real(notificaciones: notificaciones);
+  if (auth.currentSession != null) unawaited(recordatorio.reprogramar());
+  auth.onAuthStateChange.listen((cambio) {
+    if (cambio.event == AuthChangeEvent.signedIn) {
+      unawaited(recordatorio.reprogramar());
+    } else if (cambio.event == AuthChangeEvent.signedOut) {
+      unawaited(recordatorio.cancelarTodo());
+    }
+  });
+
+  runApp(
+    ProviderScope(
+      overrides: [recordatorioServicioProvider.overrideWithValue(recordatorio)],
+      child: MyApp(router: router),
+    ),
+  );
+
+  if (abrioDesdeNotificacion) {
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => router.push(Rutas.encuesta),
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {

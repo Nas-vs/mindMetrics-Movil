@@ -2,6 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>La mascota de MindMetrics usa el micrófono para escuchar tus respuestas cuando eliges conversar por voz.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Tu voz se convierte en texto para llenar la encuesta. MindMetrics guarda solo el texto de tus respuestas, nunca el audio.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

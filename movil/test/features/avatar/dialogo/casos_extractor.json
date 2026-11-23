@@ -1,0 +1,72 @@
+{
+  "nota": "Casos compartidos: los valida la referencia en Python y los ejecuta la prueba de Dart. 'confirma' = la confianza queda por debajo del umbral (0.8) y el avatar debe reconfirmar.",
+  "casos": [
+    { "campo": "genero", "texto": "Soy mujer", "motivo": "ok", "valor": "femenino", "confirma": false },
+    { "campo": "genero", "texto": "hombre", "motivo": "ok", "valor": "masculino", "confirma": false },
+    { "campo": "genero", "texto": "No binario", "motivo": "ok", "valor": "no_binario", "confirma": false },
+    { "campo": "genero", "texto": "Prefiero no decirlo", "motivo": "ok", "valor": "otro", "confirma": false },
+    { "campo": "genero", "texto": "eh pues no sé", "motivo": "sin_valor" },
+
+    { "campo": "estado_relacion", "texto": "Soltera", "motivo": "ok", "valor": "soltero", "confirma": false },
+    { "campo": "estado_relacion", "texto": "Tengo novio hace dos años", "motivo": "ok", "valor": "noviazgo", "confirma": false },
+    { "campo": "estado_relacion", "texto": "vivo con mi pareja", "motivo": "ok", "valor": "union libre", "confirma": false },
+    { "campo": "estado_relacion", "texto": "No estoy casado, estoy soltero", "motivo": "ok", "valor": "soltero", "confirma": false },
+    { "campo": "estado_relacion", "texto": "Separada", "motivo": "ok", "valor": "divorciado", "confirma": false },
+
+    { "campo": "situacion_trabajo", "texto": "Estoy en la universidad", "motivo": "ok", "valor": "estudiante", "confirma": false },
+    { "campo": "situacion_trabajo", "texto": "Trabajo medio tiempo", "motivo": "ok", "valor": "empleado medio tiempo", "confirma": false },
+    { "campo": "situacion_trabajo", "texto": "ahorita estoy buscando trabajo", "motivo": "ok", "valor": "desempleado", "confirma": false },
+    { "campo": "situacion_trabajo", "texto": "estudio y trabajo por mi cuenta", "motivo": "ambiguo" },
+
+    { "campo": "hr_sueno", "texto": "Duermo como 6 horas", "motivo": "ok", "valor": 6, "confirma": false },
+    { "campo": "hr_sueno", "texto": "siete y media", "motivo": "ok", "valor": 7.5, "confirma": false },
+    { "campo": "hr_sueno", "texto": "unas seis horas y media", "motivo": "ok", "valor": 6.5, "confirma": false },
+    { "campo": "hr_sueno", "texto": "5,5", "motivo": "ok", "valor": 5.5, "confirma": false },
+    { "campo": "hr_sueno", "texto": "entre seis y siete", "motivo": "ok", "valor": 6.5, "confirma": true },
+    { "campo": "hr_sueno", "texto": "6 o 7 horas", "motivo": "ok", "valor": 6.5, "confirma": true },
+    { "campo": "hr_sueno", "texto": "treinta", "motivo": "fuera_de_rango" },
+    { "campo": "hr_sueno", "texto": "pues depende del día", "motivo": "sin_valor" },
+
+    { "campo": "hr_trabajo", "texto": "cuarenta horas", "motivo": "ok", "valor": 40, "confirma": false },
+    { "campo": "hr_trabajo", "texto": "ocho horas al día", "motivo": "ok", "valor": 40, "confirma": true },
+    { "campo": "hr_trabajo", "texto": "cuarenta y ocho", "motivo": "ok", "valor": 48, "confirma": false },
+    { "campo": "hr_trabajo", "texto": "ciento veinte", "motivo": "ok", "valor": 120, "confirma": false },
+
+    { "campo": "hr_pantalla", "texto": "como tres horas diarias", "motivo": "ok", "valor": 3, "confirma": false },
+    { "campo": "hr_pantalla", "texto": "media hora", "motivo": "ok", "valor": 0.5, "confirma": false },
+    { "campo": "hr_pantalla", "texto": "una hora y media", "motivo": "ok", "valor": 1.5, "confirma": false },
+
+    { "campo": "hr_act_fis", "texto": "No hago ejercicio", "motivo": "ok", "valor": 0, "confirma": true },
+    { "campo": "hr_act_fis", "texto": "una hora al día", "motivo": "ok", "valor": 7, "confirma": true },
+    { "campo": "hr_act_fis", "texto": "3 horas", "motivo": "ok", "valor": 3, "confirma": false },
+
+    { "campo": "estres_laboral", "texto": "un ocho", "motivo": "ok", "valor": 8, "confirma": false },
+    { "campo": "estres_laboral", "texto": "10", "motivo": "ok", "valor": 10, "confirma": false },
+    { "campo": "estres_laboral", "texto": "mucho", "motivo": "ok", "valor": 8, "confirma": true },
+    { "campo": "estres_laboral", "texto": "muy poco", "motivo": "ok", "valor": 2, "confirma": true },
+    { "campo": "estres_laboral", "texto": "como un seis o siete", "motivo": "ok", "valor": 7, "confirma": true },
+    { "campo": "estres_laboral", "texto": "cero", "motivo": "fuera_de_rango" },
+    { "campo": "estres_laboral", "texto": "no sabría decirte", "motivo": "sin_valor" },
+
+    { "campo": "dificultad_concentra", "texto": "A veces", "motivo": "ok", "valor": "ocasional", "confirma": false },
+    { "campo": "dificultad_concentra", "texto": "casi siempre", "motivo": "ok", "valor": "frecuente", "confirma": false },
+    { "campo": "dificultad_concentra", "texto": "Nunca", "motivo": "ok", "valor": "ninguno", "confirma": false },
+
+    { "campo": "apoyo_percibido", "texto": "La verdad muy poco", "motivo": "ok", "valor": "poco", "confirma": false },
+    { "campo": "apoyo_percibido", "texto": "nadie me apoya", "motivo": "ok", "valor": "nulo", "confirma": false },
+    { "campo": "apoyo_percibido", "texto": "Excelente, mi familia siempre está", "motivo": "ok", "valor": "excelente", "confirma": false },
+
+    { "campo": "historial_panico", "texto": "Sí, una vez", "motivo": "ok", "valor": true, "confirma": false },
+    { "campo": "historial_panico", "texto": "no, nunca", "motivo": "ok", "valor": false, "confirma": false },
+    { "campo": "historial_panico", "texto": "Claro que sí", "motivo": "ok", "valor": true, "confirma": false },
+    { "campo": "historial_panico", "texto": "no sé", "motivo": "sin_valor" },
+    { "campo": "diagnostico_previo", "texto": "Tengo ansiedad diagnosticada", "motivo": "ok", "valor": true, "confirma": false },
+
+    { "campo": "tratamiento_previo", "texto": "Sí, voy al psicólogo", "motivo": "ok", "valor": "adherente", "confirma": false },
+    { "campo": "tratamiento_previo", "texto": "fui un tiempo pero lo dejé", "motivo": "ok", "valor": "abandono", "confirma": false },
+    { "campo": "tratamiento_previo", "texto": "Nunca", "motivo": "ok", "valor": "ninguno", "confirma": false },
+
+    { "campo": "uso_sustancias", "texto": "No", "motivo": "ok", "valor": false, "confirma": false },
+    { "campo": "uso_sustancias", "texto": "a veces marihuana", "motivo": "ok", "valor": true, "confirma": false }
+  ]
+}

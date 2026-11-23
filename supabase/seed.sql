@@ -27,3 +27,38 @@ begin
     'email', now(), now(), now()
   );
 end $$;
+
+insert into public.registros_animo
+  (id, usuario_id, fecha, nivel, nota, actualizado_en_cliente)
+select
+  gen_random_uuid(),
+  'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  current_date - d,
+  (array[3, 4, 2, 5, 4, 3, 1, 2, 3, 4, 5, 4, 3, 2])[d],   -- nivel fijo por día
+  case when d in (2, 7) then 'Día difícil en la universidad' end,
+  now() - make_interval(days => d)
+from generate_series(1, 14) as d;
+
+-- Algunas emociones y factores en esos registros
+insert into public.registro_emociones (registro_id, emocion_id)
+select r.id, case when r.nivel >= 4 then 1 when r.nivel = 3 then 2 else 7 end
+from public.registros_animo r
+where r.usuario_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+
+insert into public.registro_factores (registro_id, factor_id)
+select r.id, case when r.nivel <= 2 then 2 else 1 end
+from public.registros_animo r
+where r.usuario_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+
+-- ---------------------------------------------------------------------
+-- Solo desarrollo local (el seed no se aplica en el proyecto en la nube):
+-- usuario con el que se conecta el servicio `python manage.py motor_supabase`
+-- del repo web. En la nube se crea a mano con una clave real (ver
+-- docs/avatar/CONTRATO_MOTOR.md).
+-- ---------------------------------------------------------------------
+do $$
+begin
+  if not exists (select 1 from pg_roles where rolname = 'motor_servicio_local') then
+    create role motor_servicio_local login password 'motor_local' in role motor_mindmetrics;
+  end if;
+end $$;
